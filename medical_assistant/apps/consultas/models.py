@@ -10,4 +10,4 @@ class Consulta(models.Model):
     tratamiento = models.TextField()
 
     def __str__(self):
-        return f'{self.paciente} - {self.medico} - {self.fecha_hora}'
+        return f"Consulta de {self.paciente} con {self.medico} el {self.fecha_hora}"

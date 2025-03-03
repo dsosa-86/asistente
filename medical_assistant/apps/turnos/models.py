@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from apps.pacientes.models import Paciente
 from apps.usuarios.models import Medico
 from apps.centros_medicos.models import Consultorio

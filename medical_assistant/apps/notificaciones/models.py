@@ -44,7 +44,7 @@ class Notificacion(models.Model):
         verbose_name_plural = "Notificaciones"
 
     def __str__(self):
-        return f"{self.get_tipo_display()} - {self.mensaje} ({self.get_estado_display()})"
+        return f"{self.get_tipo_display()} - {self.usuario} - {self.estado}"
 
     def marcar_como_enviado(self):
         self.estado = 'ENVIADO'

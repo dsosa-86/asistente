@@ -16,8 +16,7 @@ def validar_telefono(value):
         raise ValidationError("El teléfono debe contener solo números, '+' y '-'.")
 
 class Paciente(models.Model):
-    # Campos básicos
-    usuario = models.OneToOneField('usuarios.Usuario', on_delete=models.CASCADE)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     dni = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
@@ -25,41 +24,13 @@ class Paciente(models.Model):
     telefono = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     fecha_hora_ingreso = models.DateTimeField(auto_now_add=True)
-    
-    # Relaciones con otras entidades usando lazy relationships
-    medico = models.ForeignKey(
-        'usuarios.Medico',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='pacientes'
-    )
-    obra_social = models.ForeignKey(
-        'obras_sociales.ObraSocial',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='pacientes'
-    )
-    sanatorio = models.ForeignKey(
-        'centros_medicos.CentroMedico',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='pacientes'
-    )
-    derivado = models.ForeignKey(
-        'self',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='derivados'
-    )
-    
-    # Campos de estado y seguimiento
+    medico = models.ForeignKey(Medico, on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
+    obra_social = models.ForeignKey(ObraSocial, on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
+    sanatorio = models.ForeignKey(CentroMedico, on_delete=models.SET_NULL, null=True, blank=True, related_name='pacientes')
+    derivado = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='derivados')
     activo = models.BooleanField(default=True)
     notas = models.TextField(blank=True)
-    
+
     class Meta:
         verbose_name = _("Paciente")
         verbose_name_plural = _("Pacientes")
@@ -70,7 +41,7 @@ class Paciente(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.apellido}, {self.nombre} (DNI: {self.dni})"
+        return f"{self.nombre} {self.apellido}"
 
     def clean(self):
         if not self.dni:

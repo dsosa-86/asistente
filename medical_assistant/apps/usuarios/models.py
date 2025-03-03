@@ -11,9 +11,9 @@ class Usuario(AbstractUser):
         ('medico', 'Médico'),
         ('administrativo', 'Administrativo'),
     ]
-    rol = models.CharField(max_length=15, choices=ROLES)
-    telefono = models.CharField(max_length=20, blank=True, null=True)
-    direccion = models.CharField(max_length=200, blank=True, null=True)
+    rol = models.CharField(max_length=20, choices=ROLES)
+    telefono = models.CharField(max_length=20, blank=True)
+    direccion = models.CharField(max_length=255, blank=True)
 
     # Definir related_name únicos para evitar conflictos
     groups = models.ManyToManyField(
@@ -34,7 +34,7 @@ class Usuario(AbstractUser):
     )
 
     def __str__(self):
-        return f"{self.get_full_name()} ({self.rol})"
+        return self.username
 
 class Medico(models.Model):
     TIPOS = [
@@ -43,19 +43,19 @@ class Medico(models.Model):
         ('INSTRUMENTADOR', 'Instrumentador'),
     ]
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=20, choices=TIPOS)
+    tipo = models.CharField(max_length=50)
     especialidad = models.CharField(max_length=100)
-    matricula = models.CharField(max_length=20)
+    matricula = models.CharField(max_length=50)
 
     def __str__(self):
-        return f"{self.usuario.get_full_name()} - {self.especialidad}"
+        return f"Dr. {self.usuario.get_full_name()}"
 
 class Administrativo(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE)
     departamento = models.CharField(max_length=100)
 
     def __str__(self):
-        return f"{self.usuario.get_full_name()} - {self.departamento}"
+        return self.usuario.get_full_name()
     
 # apps/usuarios/models.py
 class GestionAdministrativa(models.Model):
@@ -65,7 +65,7 @@ class GestionAdministrativa(models.Model):
     ]
     
     administrativo = models.ForeignKey(Administrativo, on_delete=models.CASCADE, related_name='gestiones')
-    tipo_gestion = models.CharField(max_length=10, choices=TIPOS_GESTION)
+    tipo_gestion = models.CharField(max_length=20, choices=TIPOS_GESTION)
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE, null=True, blank=True, related_name='administrativos')
     centro_medico = models.ForeignKey('centros_medicos.CentroMedico', on_delete=models.CASCADE, null=True, blank=True, related_name='administrativos')
     activo = models.BooleanField(default=True)
@@ -92,6 +92,4 @@ class GestionAdministrativa(models.Model):
             raise ValidationError('Debe especificar un centro médico para la gestión de tipo Centro')
 
     def __str__(self):
-        if self.tipo_gestion == 'MEDICO':
-            return f"Gestión para Dr. {self.medico} por {self.administrativo}"
-        return f"Gestión para {self.centro_medico} por {self.administrativo}"
+        return f"{self.administrativo} - {self.tipo_gestion}"

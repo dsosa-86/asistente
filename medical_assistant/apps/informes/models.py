@@ -7,7 +7,6 @@ from apps.consultas.models import Consulta
 from apps.operaciones.models import Operacion
 from apps.insumos_medicos.models import MaterialQuirurgico, MedicamentoQuirurgico
 
-
 class PlantillaInforme(models.Model):
     TIPOS = [
         ('CONSULTA', 'Informe de Consulta'),
@@ -415,3 +414,4 @@ class SeguimientoPostProcedimiento(models.Model):
     def clean(self):
         if self.estado == 'REALIZADO' and not self.fecha_realizado:
             raise ValidationError('Un control realizado debe tener fecha de realización')
+

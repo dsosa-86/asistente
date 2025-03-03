@@ -1,13 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-
-# Create your models here.
-from django.db import models
-#from apps.pacientes.models import Paciente
+from apps.pacientes.models import Paciente
 from apps.usuarios.models import Medico
-from apps.centros_medicos.models import CentroMedico
-
+from apps.centros_medicos.models import CentroMedico, Quirofano
 
 class TipoCirugia(models.Model):
     nombre = models.CharField(max_length=100)
@@ -27,9 +23,6 @@ class ProcedimientoEspecifico(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.tipo_cirugia})"
 
-
-
-
 class Operacion(models.Model):
     ESTADOS = [
         ('PROGRAMADA', 'Programada'),
@@ -38,61 +31,17 @@ class Operacion(models.Model):
         ('CANCELADA', 'Cancelada'),
     ]
     
-    # Relaciones principales usando lazy relationships
-    paciente = models.ForeignKey(
-        'pacientes.Paciente',
-        on_delete=models.PROTECT,
-        related_name='operaciones'
-    )
-    tipo_cirugia = models.ForeignKey(
-        TipoCirugia,
-        on_delete=models.PROTECT
-    )
-    procedimiento_especifico = models.ForeignKey(
-        ProcedimientoEspecifico,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-    
-    # Personal médico
-    cirujano_principal = models.ForeignKey(
-        'usuarios.Medico',
-        on_delete=models.PROTECT,
-        related_name='operaciones_como_cirujano'
-    )
-    anestesiologo = models.ForeignKey(
-        'usuarios.Medico',
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='operaciones_como_anestesiologo'
-    )
-    instrumentador = models.ForeignKey(
-        'usuarios.Medico',
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='operaciones_como_instrumentador'
-    )
-    
-    # Información de la operación
+    paciente = models.ForeignKey(Paciente, on_delete=models.PROTECT, related_name='operaciones')
+    tipo_cirugia = models.ForeignKey(TipoCirugia, on_delete=models.PROTECT)
+    procedimiento_especifico = models.ForeignKey(ProcedimientoEspecifico, on_delete=models.SET_NULL, null=True, blank=True)
+    cirujano_principal = models.ForeignKey(Medico, on_delete=models.PROTECT, related_name='operaciones_como_cirujano')
+    anestesiologo = models.ForeignKey(Medico, on_delete=models.SET_NULL, null=True, related_name='operaciones_como_anestesiologo')
+    instrumentador = models.ForeignKey(Medico, on_delete=models.SET_NULL, null=True, related_name='operaciones_como_instrumentador')
     fecha_programada = models.DateTimeField()
     duracion_estimada = models.DurationField()
-    estado = models.CharField(
-        max_length=20,
-        choices=ESTADOS,
-        default='PROGRAMADA'
-    )
-    centro_medico = models.ForeignKey(
-        'centros_medicos.CentroMedico',
-        on_delete=models.PROTECT
-    )
-    quirofano = models.ForeignKey(
-        'centros_medicos.Quirofano',
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    
-    # Campos de seguimiento
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PROGRAMADA')
+    centro_medico = models.ForeignKey(CentroMedico, on_delete=models.PROTECT)
+    quirofano = models.ForeignKey(Quirofano, on_delete=models.SET_NULL, null=True)
     fecha_inicio = models.DateTimeField(null=True, blank=True)
     fecha_fin = models.DateTimeField(null=True, blank=True)
     notas_preoperatorias = models.TextField(blank=True)
@@ -109,17 +58,9 @@ class Operacion(models.Model):
     def tipo_operacion(self):
         return self.tipo_cirugia.nombre
 
-
 class Protocolo(models.Model):
-    operacion = models.OneToOneField(
-        Operacion,
-        on_delete=models.CASCADE,
-        related_name='protocolo'
-    )
-    medico_responsable = models.ForeignKey(
-        'usuarios.Medico',
-        on_delete=models.PROTECT
-    )
+    operacion = models.OneToOneField(Operacion, on_delete=models.CASCADE, related_name='protocolo')
+    medico_responsable = models.ForeignKey('usuarios.Medico', on_delete=models.PROTECT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     contenido = models.TextField()
     diagnostico = models.TextField()
@@ -130,19 +71,9 @@ class Protocolo(models.Model):
         return f"Protocolo - {self.operacion}"
 
 class EquipoQuirurgico(models.Model):
-    operacion = models.OneToOneField(
-        Operacion,
-        on_delete=models.CASCADE,
-        related_name='equipo'
-    )
-    cirujanos_asistentes = models.ManyToManyField(
-        'usuarios.Medico',
-        related_name='asistencias_quirurgicas'
-    )
-    enfermeros = models.ManyToManyField(
-        'Enfermero',
-        related_name='operaciones'
-    )
+    operacion = models.OneToOneField(Operacion, on_delete=models.CASCADE, related_name='equipo')
+    cirujanos_asistentes = models.ManyToManyField('usuarios.Medico', related_name='asistencias_quirurgicas')
+    enfermeros = models.ManyToManyField('Enfermero', related_name='operaciones')
     
     def __str__(self):
         return f"Equipo - {self.operacion}"
@@ -156,7 +87,6 @@ class Enfermero(models.Model):
     def __str__(self):
         return f"{self.apellido}, {self.nombre}"
 
-
 class EstudioPrequirurgico(models.Model):
     TIPOS = [
         ('LABORATORIO', 'Laboratorio'),
@@ -168,11 +98,7 @@ class EstudioPrequirurgico(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField()
     tipo = models.CharField(max_length=20, choices=TIPOS)
-    tipo_cirugia = models.ForeignKey(
-        TipoCirugia,
-        on_delete=models.CASCADE,
-        related_name='estudios_requeridos'
-    )
+    tipo_cirugia = models.ForeignKey(TipoCirugia, on_delete=models.CASCADE, related_name='estudios_requeridos')
     es_obligatorio = models.BooleanField(default=True)
     
     def __str__(self):
@@ -187,55 +113,16 @@ class PrequirurgicoPaciente(models.Model):
         ('CANCELADO', 'Cancelado')
     ]
     
-    paciente = models.ForeignKey(
-        'pacientes.Paciente',
-        on_delete=models.CASCADE,
-        related_name='estudios_prequirurgicos'
-    )
-    estudio = models.ForeignKey(
-        EstudioPrequirurgico,
-        on_delete=models.CASCADE
-    )
-    estado = models.CharField(
-        max_length=20,
-        choices=ESTADOS,
-        default='PENDIENTE'
-    )
+    paciente = models.ForeignKey('pacientes.Paciente', on_delete=models.CASCADE, related_name='estudios_prequirurgicos')
+    estudio = models.ForeignKey(EstudioPrequirurgico, on_delete=models.CASCADE)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
     fecha_solicitud = models.DateTimeField(auto_now_add=True)
     fecha_realizacion = models.DateField(null=True, blank=True)
     resultado = models.TextField(blank=True)
-    archivo = models.FileField(
-        upload_to='estudios_prequirurgicos/',
-        null=True,
-        blank=True
-    )
+    archivo = models.FileField(upload_to='estudios_prequirurgicos/', null=True, blank=True)
     
     def __str__(self):
         return f"{self.estudio} - {self.paciente}"
-
-
-
-
-"""
-class Operacion(models.Model):
-    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
-    medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
-    centro_medico = models.ForeignKey(CentroMedico, on_delete=models.CASCADE)
-    fecha_hora = models.DateTimeField()
-    tipo_procedimiento = models.CharField(max_length=100)
-    observaciones = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"Operación de {self.paciente} con {self.medico} el {self.fecha_hora}"
-
-class Protocolo(models.Model):
-    operacion = models.OneToOneField(Operacion, on_delete=models.CASCADE)
-    descripcion = models.TextField()
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Protocolo para {self.operacion}"
-"""
 
 class PlantillaProtocolo(models.Model):
     nombre = models.CharField(max_length=100)
