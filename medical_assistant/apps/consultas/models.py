@@ -1,7 +1,4 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from apps.pacientes.models import Paciente
 from apps.usuarios.models import Medico
 
@@ -10,8 +7,7 @@ class Consulta(models.Model):
     medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
     fecha_hora = models.DateTimeField()
     diagnostico = models.TextField()
-    tratamiento = models.TextField(blank=True, null=True)
-    observaciones = models.TextField(blank=True, null=True)
+    tratamiento = models.TextField()
 
     def __str__(self):
-        return f"Consulta de {self.paciente} con {self.medico} el {self.fecha_hora}"
+        return f'{self.paciente} - {self.medico} - {self.fecha_hora}'

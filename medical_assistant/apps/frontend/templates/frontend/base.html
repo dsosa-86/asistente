@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Asistente Médico{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script src="{% static 'js/main.js' %}" defer></script>
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo-container">
+            <img src="{% static 'images/logo.svg' %}" alt="Logo Clínica">
+        </div>
+        {% include 'frontend/partials/navbar.html' %}
+        <div class="auth-buttons">
+            <button class="login">Iniciar Sesión</button>
+            <button class="register">Registrarse</button>
+        </div>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% include 'frontend/partials/footer.html' %}
+</body>
+</html>

@@ -88,6 +88,24 @@ class ExcelImportViewSet(viewsets.ModelViewSet):
         
         return Response(stats)
 
+    @swagger_auto_schema(
+        operation_description="Reprocesa un archivo Excel",
+        responses={
+            200: openapi.Response('Reprocesamiento iniciado correctamente'),
+            400: 'Solicitud inválida',
+            404: 'Importación no encontrada'
+        }
+    )
+    @action(detail=True, methods=['post'])
+    def reprocesar(self, request, pk=None):
+        """Inicia el reprocesamiento asíncrono del archivo."""
+        importacion = self.get_object()
+        task = procesar_archivo_excel.delay(importacion.id, reprocesar=True)
+        return Response({
+            'task_id': task.id,
+            'status': 'Reprocesamiento iniciado'
+        })
+
 class MapeoColumnasViewSet(viewsets.ModelViewSet):
     """
     API endpoint para gestionar mapeos de columnas.
@@ -113,4 +131,4 @@ class MapeoColumnasViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             return Response({'valid': True})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

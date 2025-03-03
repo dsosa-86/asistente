@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificaciones</title>
+</head>
+<body>
+    <h1>Notificaciones</h1>
+    <ul>
+        {% for notificacion in notificaciones %}
+        <li>
+            {{ notificacion.mensaje }} - {{ notificacion.fecha_creacion }}
+            {% if not notificacion.leida %}
+            <a href="{% url 'notificaciones:marcar_como_leida' notificacion.pk %}">Marcar como leída</a>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="pagination">
+        <span class="step-links">
+            {% if notificaciones.has_previous %}
+                <a href="?page=1">&laquo; primera</a>
+                <a href="?page={{ notificaciones.previous_page_number }}">anterior</a>
+            {% endif %}
+            <span class="current">
+                Página {{ notificaciones.number }} de {{ notificaciones.paginator.num_pages }}.
+            </span>
+            {% if notificaciones.has_next %}
+                <a href="?page={{ notificaciones.next_page_number }}">siguiente</a>
+                <a href="?page={{ notificaciones.paginator.num_pages }}">última &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</body>
+</html>

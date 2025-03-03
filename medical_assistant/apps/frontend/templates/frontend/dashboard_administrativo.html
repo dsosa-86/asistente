@@ -1,0 +1,30 @@
+{% extends "frontend/dashboard_base.html" %}
+
+{% block title %}Dashboard Administrativo{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Gestión de Pacientes</h2>
+    <ul>
+        {% for paciente in pacientes %}
+        <li>{{ paciente.nombre }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="card">
+    <h2>Agenda</h2>
+    <!-- Agenda -->
+</div>
+<div class="card">
+    <h2>Autorizaciones</h2>
+    <!-- Autorizaciones -->
+</div>
+<div class="card">
+    <h2>Reportes</h2>
+    <!-- Reportes -->
+</div>
+<div class="card">
+    <h2>ChatBot Asistente</h2>
+    <!-- ChatBot -->
+</div>
+{% endblock %}

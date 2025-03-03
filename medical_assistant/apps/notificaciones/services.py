@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template import Template, Context
 from django.utils import timezone
+from twilio.rest import Client
 from .models import Notificacion, ConfiguracionNotificacion, PlantillaNotificacion
 
 class ServicioNotificaciones:
@@ -38,6 +39,8 @@ class ServicioNotificaciones:
             ServicioNotificaciones._enviar_sms(notificacion)
         elif tipo == 'SISTEMA' and config.sistema_activo:
             notificacion.marcar_como_enviado()
+        elif tipo == 'WHATSAPP' and config.whatsapp_activo:
+            ServicioNotificaciones._enviar_whatsapp(notificacion)
             
         return notificacion
 
@@ -75,6 +78,8 @@ class ServicioNotificaciones:
             return config.sms_activo
         elif tipo == 'SISTEMA':
             return config.sistema_activo
+        elif tipo == 'WHATSAPP':
+            return config.whatsapp_activo
         return False
 
     @staticmethod
@@ -118,6 +123,23 @@ class ServicioNotificaciones:
             notificacion.registrar_error(str(e))
 
     @staticmethod
+    def _enviar_whatsapp(notificacion):
+        """
+        Envía la notificación por WhatsApp
+        Implementar integración con servicio de WhatsApp (por ejemplo, Twilio)
+        """
+        try:
+            client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            message = client.messages.create(
+                body=notificacion.mensaje,
+                from_=settings.TWILIO_WHATSAPP_FROM,
+                to=f'whatsapp:{notificacion.usuario.profile.phone_number}'
+            )
+            notificacion.marcar_como_enviado()
+        except Exception as e:
+            notificacion.registrar_error(str(e))
+
+    @staticmethod
     def obtener_notificaciones_pendientes(usuario):
         """Obtiene las notificaciones no leídas del usuario"""
         return Notificacion.objects.filter(
@@ -134,4 +156,4 @@ class ServicioNotificaciones:
         queryset.update(
             estado='LEIDO',
             fecha_lectura=timezone.now()
-        ) 
+        )

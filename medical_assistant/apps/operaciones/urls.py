@@ -17,4 +17,11 @@ urlpatterns = [
          views.cargar_resultado_estudio, name='cargar_resultado_estudio'),
     path('estudios/<int:estudio_paciente_id>/actualizar-estado/',
          views.actualizar_estado_estudio, name='actualizar_estado_estudio'),
-] 
+
+    # URLs para la gestión de operaciones
+    path('operaciones/', views.lista_operaciones, name='lista_operaciones'),
+    path('operaciones/crear/', views.crear_operacion, name='crear_operacion'),
+    path('operaciones/<int:pk>/', views.detalle_operacion, name='detalle_operacion'),
+    path('operaciones/<int:pk>/editar/', views.editar_operacion, name='editar_operacion'),
+    path('operaciones/<int:pk>/eliminar/', views.eliminar_operacion, name='eliminar_operacion'),
+]

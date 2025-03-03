@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Consulta</title>
+</head>
+<body>
+    <h1>Detalle de Consulta</h1>
+    <p><strong>Paciente:</strong> {{ consulta.paciente }}</p>
+    <p><strong>Médico:</strong> {{ consulta.medico }}</p>
+    <p><strong>Fecha y Hora:</strong> {{ consulta.fecha_hora }}</p>
+    <p><strong>Diagnóstico:</strong> {{ consulta.diagnostico }}</p>
+    <p><strong>Tratamiento:</strong> {{ consulta.tratamiento }}</p>
+    <a href="{% url 'consultas:editar_consulta' consulta.pk %}">Editar</a>
+    <a href="{% url 'consultas:lista_consultas' %}">Volver a la lista de consultas</a>
+</body>
+</html>

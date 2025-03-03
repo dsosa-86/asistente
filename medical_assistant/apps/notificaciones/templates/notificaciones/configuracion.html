@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración de Notificaciones</title>
+</head>
+<body>
+    <h1>Configuración de Notificaciones</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label>
+            <input type="checkbox" name="email_activo" {% if config.email_activo %}checked{% endif %}>
+            Recibir notificaciones por correo
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" name="sms_activo" {% if config.sms_activo %}checked{% endif %}>
+            Recibir notificaciones por SMS
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" name="sistema_activo" {% if config.sistema_activo %}checked{% endif %}>
+            Recibir notificaciones en el sistema
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" name="whatsapp_activo" {% if config.whatsapp_activo %}checked{% endif %}>
+            Recibir notificaciones por WhatsApp
+        </label>
+        <br>
+        <label>
+            Hora de inicio:
+            <input type="time" name="horario_inicio" value="{{ config.horario_inicio }}">
+        </label>
+        <br>
+        <label>
+            Hora de fin:
+            <input type="time" name="horario_fin" value="{{ config.horario_fin }}">
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" name="dias_habiles" {% if config.dias_habiles %}checked{% endif %}>
+            Solo recibir notificaciones en días hábiles
+        </label>
+        <br>
+        <button type="submit">Guardar Configuración</button>
+    </form>
+</body>
+</html>

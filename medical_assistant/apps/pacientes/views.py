@@ -1,20 +1,13 @@
-from django.shortcuts import get_object_or_404, render
-
-# Create your views here.
-
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 import pandas as pd
-
-from .models import Paciente  # Ajusta según donde esté tu modelo
-from .forms import ArchivoExcelForm  # Ajusta según donde esté tu formulario
-from .forms import PacienteForm
+from .models import Paciente
+from .forms import ArchivoExcelForm, PacienteForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from datetime import datetime, timedelta
 from apps.operaciones.models import PrequirurgicoPaciente, Operacion
 from apps.consultas.models import Consulta
-
 
 def cargar_excel(request):
     if request.method == "POST":
@@ -23,20 +16,16 @@ def cargar_excel(request):
             archivo = request.FILES['archivo']
             try:
                 df = pd.read_excel(archivo, engine='openpyxl')
-                
                 for _, row in df.iterrows():
                     Paciente.objects.create(
-                        # ... existing code ...
+                        # ...existing code...
                     )
                 messages.success(request, "Datos cargados correctamente.")
-                return redirect('admin:paciente_changelist')  # Ajusta según tu URL de admin
-
+                return redirect('admin:paciente_changelist')
             except Exception as e:
                 messages.error(request, f"Error al procesar el archivo: {e}")
-    
     else:
         form = ArchivoExcelForm()
-
     return render(request, 'pacientes/cargar_excel.html', {'form': form})
 
 def crear_paciente(request):
@@ -68,28 +57,19 @@ def editar_paciente(request, pk):
 
 @login_required
 def dashboard_paciente(request, pk):
-    """Vista del dashboard del paciente"""
     paciente = get_object_or_404(Paciente, pk=pk)
-    
-    # Obtener estudios prequirúrgicos pendientes
     estudios_pendientes = PrequirurgicoPaciente.objects.filter(
         paciente=paciente,
         estado__in=['PENDIENTE', 'SOLICITADO']
     ).select_related('estudio')
-    
-    # Obtener próximas operaciones
     proximas_operaciones = Operacion.objects.filter(
         paciente=paciente,
         estado='PROGRAMADA',
         fecha_programada__gte=datetime.now()
     ).order_by('fecha_programada')[:5]
-    
-    # Obtener últimas consultas
     ultimas_consultas = Consulta.objects.filter(
         paciente=paciente
     ).order_by('-fecha_hora')[:5]
-    
-    # Estadísticas generales
     fecha_limite = datetime.now() - timedelta(days=365)
     estadisticas = {
         'total_consultas': Consulta.objects.filter(paciente=paciente).count(),
@@ -103,7 +83,6 @@ def dashboard_paciente(request, pk):
         ).count(),
         'estudios_pendientes': estudios_pendientes.count()
     }
-    
     context = {
         'paciente': paciente,
         'estudios_pendientes': estudios_pendientes,
@@ -111,6 +90,16 @@ def dashboard_paciente(request, pk):
         'ultimas_consultas': ultimas_consultas,
         'estadisticas': estadisticas,
     }
-    
     return render(request, 'pacientes/dashboard.html', context)
+
+@login_required
+def detalle_paciente(request, pk):
+    paciente = get_object_or_404(Paciente, pk=pk)
+    context = {
+        'paciente': paciente,
+        'consultas': Consulta.objects.filter(paciente=paciente),
+        'operaciones': Operacion.objects.filter(paciente=paciente),
+        'estudios': PrequirurgicoPaciente.objects.filter(paciente=paciente)
+    }
+    return render(request, 'pacientes/detalle_paciente.html', context)
 

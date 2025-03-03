@@ -8,4 +8,4 @@ router.register(r'estudios-prequirurgicos', PrequirurgicoPacienteViewSet, basena
 
 urlpatterns = [
     path('', include(router.urls)),
-] 
+]

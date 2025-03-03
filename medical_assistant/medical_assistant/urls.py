@@ -24,4 +24,11 @@ urlpatterns = [
     path('importacion_excel/', include('apps.importacion_excel.urls')),
     # Include URLs for other apps
     path('pacientes/', include('apps.pacientes.urls')),
+    path('usuarios/', include('apps.usuarios.urls')),
+    path('turnos/', include('apps.turnos.urls')),
+    path('operaciones/', include('apps.operaciones.urls')),
+    path('obras_sociales/', include('apps.obras_sociales.urls')),
+    path('notificaciones/', include('apps.notificaciones.urls')),
+    path('insumos_medicos/', include('apps.insumos_medicos.urls')),
+    path('informes/', include('apps.informes.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

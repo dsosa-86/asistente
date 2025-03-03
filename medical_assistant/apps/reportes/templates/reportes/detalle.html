@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Reporte</title>
+</head>
+<body>
+    <h1>{{ reporte.nombre }}</h1>
+    <p>{{ reporte.descripcion }}</p>
+    <h2>Estadísticas</h2>
+    <ul>
+        {% for estadistica in reporte.estadisticas.all %}
+        <li>{{ estadistica.nombre }}: {{ estadistica.valor }} ({{ estadistica.fecha }})</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

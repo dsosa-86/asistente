@@ -1,0 +1,30 @@
+{% extends "frontend/dashboard_base.html" %}
+
+{% block title %}Dashboard Paciente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Próximos Turnos</h2>
+    <ul>
+        {% for consulta in consultas %}
+        <li>{{ consulta.fecha_hora }} - {{ consulta.medico }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="card">
+    <h2>Historial Clínico</h2>
+    <!-- Historial clínico -->
+</div>
+<div class="card">
+    <h2>Estudios</h2>
+    <!-- Lista de estudios -->
+</div>
+<div class="card">
+    <h2>Solicitudes</h2>
+    <!-- Solicitudes -->
+</div>
+<div class="card">
+    <h2>ChatBot Asistente</h2>
+    <!-- ChatBot -->
+</div>
+{% endblock %}

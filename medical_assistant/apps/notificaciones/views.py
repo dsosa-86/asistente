@@ -30,6 +30,7 @@ def configuracion_notificaciones(request):
         config.email_activo = request.POST.get('email_activo') == 'on'
         config.sms_activo = request.POST.get('sms_activo') == 'on'
         config.sistema_activo = request.POST.get('sistema_activo') == 'on'
+        config.whatsapp_activo = request.POST.get('whatsapp_activo') == 'on'
         config.horario_inicio = request.POST.get('horario_inicio')
         config.horario_fin = request.POST.get('horario_fin')
         config.dias_habiles = request.POST.get('dias_habiles') == 'on'
@@ -81,4 +82,16 @@ def obtener_notificaciones_pendientes(request):
             'fecha': n.fecha_creacion.strftime('%d/%m/%Y %H:%M'),
             'prioridad': n.get_prioridad_display()
         } for n in notificaciones]
-    }) 
+    })
+
+@login_required
+def listar_notificaciones(request):
+    notificaciones = Notificacion.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+    return render(request, 'notificaciones/listar_notificaciones.html', {'notificaciones': notificaciones})
+
+@login_required
+def marcar_como_leida(request, pk):
+    notificacion = get_object_or_404(Notificacion, pk=pk, usuario=request.user)
+    notificacion.leida = True
+    notificacion.save()
+    return redirect('listar_notificaciones')
