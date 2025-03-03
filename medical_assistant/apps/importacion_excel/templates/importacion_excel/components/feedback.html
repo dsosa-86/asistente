@@ -1,0 +1,99 @@
+{% load static %}
+
+{# Componente para mostrar errores #}
+{% macro error_message %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-circle me-2"></i>
+    <span class="message">{{ message }}</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endmacro %}
+
+{# Componente para mostrar advertencias #}
+{% macro warning_message %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <span class="message">{{ message }}</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endmacro %}
+
+{# Componente para mostrar sugerencias #}
+{% macro suggestion_box %}
+<div class="suggestion-box border rounded p-3 mb-3 bg-light">
+    <h6 class="suggestion-title">
+        <i class="fas fa-lightbulb text-warning me-2"></i>
+        Sugerencias de corrección
+    </h6>
+    <div class="suggestion-content">
+        {% for suggestion in suggestions %}
+        <div class="suggestion-item d-flex align-items-center mb-2">
+            <span class="suggestion-text flex-grow-1">{{ suggestion.valor }}</span>
+            <div class="suggestion-actions">
+                <button class="btn btn-sm btn-outline-success accept-suggestion" 
+                        data-value="{{ suggestion.valor }}"
+                        title="Aceptar sugerencia">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %}
+
+{# Componente para mostrar el progreso de la validación #}
+{% macro validation_progress %}
+<div class="validation-progress mb-4">
+    <div class="progress" style="height: 25px;">
+        <div class="progress-bar bg-success" role="progressbar" 
+             style="width: {{ progress.valid_percent }}%">
+            {{ progress.valid_count }} Válidos
+        </div>
+        <div class="progress-bar bg-warning" role="progressbar" 
+             style="width: {{ progress.warning_percent }}%">
+            {{ progress.warning_count }} Advertencias
+        </div>
+        <div class="progress-bar bg-danger" role="progressbar" 
+             style="width: {{ progress.error_percent }}%">
+            {{ progress.error_count }} Errores
+        </div>
+    </div>
+    <div class="progress-stats d-flex justify-content-between mt-2">
+        <small>Total: {{ progress.total_records }} registros</small>
+        <small>Procesados: {{ progress.processed_percent }}%</small>
+    </div>
+</div>
+{% endmacro %}
+
+{# Componente para mostrar el historial de correcciones #}
+{% macro correction_history %}
+<div class="correction-history">
+    <h6 class="correction-history-title">
+        <i class="fas fa-history me-2"></i>
+        Historial de correcciones
+    </h6>
+    <div class="correction-list">
+        {% for correction in corrections %}
+        <div class="correction-item">
+            <div class="correction-header d-flex justify-content-between">
+                <span class="correction-field">{{ correction.campo }}</span>
+                <small class="correction-date">{{ correction.fecha|date:"d/m/Y H:i" }}</small>
+            </div>
+            <div class="correction-content">
+                <div class="correction-values">
+                    <span class="original-value text-danger">{{ correction.valor_original }}</span>
+                    <i class="fas fa-arrow-right mx-2"></i>
+                    <span class="corrected-value text-success">{{ correction.valor_corregido }}</span>
+                </div>
+                {% if correction.justificacion %}
+                <small class="correction-reason text-muted">
+                    {{ correction.justificacion }}
+                </small>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endmacro %} 

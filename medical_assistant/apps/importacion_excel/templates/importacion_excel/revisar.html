@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load static %}
+{% load json_script %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/importacion_excel/feedback.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Panel lateral de retroalimentación -->
+        <div class="col-md-3">
+            <div class="sticky-top" style="top: 1rem;">
+                <!-- Progreso de validación -->
+                {% include "importacion_excel/components/feedback.html" with component="validation_progress" progress=progress_stats %}
+                
+                <!-- Historial de correcciones -->
+                {% if corrections %}
+                    {% include "importacion_excel/components/feedback.html" with component="correction_history" corrections=corrections %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="col-md-9">
+            <h1 class="h3 mb-4">
+                <i class="fas fa-check-double"></i> 
+                Revisión y corrección de datos
+            </h1>
+
+            <!-- Errores y advertencias globales -->
+            {% if errores %}
+                {% for error in errores %}
+                    {% include "importacion_excel/components/feedback.html" with component="error_message" message=error.mensaje %}
+                {% endfor %}
+            {% endif %}
+
+            {% if advertencias %}
+                {% for advertencia in advertencias %}
+                    {% include "importacion_excel/components/feedback.html" with component="warning_message" message=advertencia.mensaje %}
+                {% endfor %}
+            {% endif %}
+
+            <!-- Formulario de corrección -->
+            <form id="correccionForm" method="post" action="{% url 'importacion_excel:guardar_correcciones' %}">
+                {% csrf_token %}
+                
+                {% for sheet, registros in datos.items %}
+                <div class="card mb-4 sheet-section">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-table"></i> {{ sheet }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        {% for key in registros.0.keys %}
+                                            <th>{{ key }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for registro in registros %}
+                                    <tr>
+                                        {% for key, value in registro.items %}
+                                        <td>
+                                            <div class="editable-cell">
+                                                <input type="text" 
+                                                       class="form-control form-control-sm"
+                                                       data-sheet="{{ sheet }}"
+                                                       data-row="{{ forloop.parentloop.counter0 }}"
+                                                       data-field="{{ key }}"
+                                                       value="{{ value|default:'' }}"
+                                                       {% if key in campos_bloqueados %}disabled{% endif %}>
+                                                
+                                                {% if value in errores_campo %}
+                                                    <div class="invalid-feedback">
+                                                        {{ errores_campo|get_item:value }}
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                <!-- Sugerencias -->
+                                                {% with sugerencias=sugerencias|get_sugerencias:key:value %}
+                                                    {% if sugerencias %}
+                                                        {% include "importacion_excel/components/feedback.html" with component="suggestion_box" suggestions=sugerencias %}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Botones de acción -->
+                <div class="d-flex justify-content-between mb-4">
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </button>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar correcciones
+                        </button>
+                        <button type="button" class="btn btn-success" id="btnProcesar">
+                            <i class="fas fa-check-circle"></i> Procesar importación
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campo oculto para datos JSON -->
+                <input type="hidden" name="excel_data_corregido" id="excel_data_corregido">
+                <input type="hidden" name="importacion_id" value="{{ importacion_id }}">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de procesamiento -->
+<div class="modal fade" id="processingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <h5>Procesando datos...</h5>
+                <p class="text-muted mb-0">Por favor, espere mientras se procesan los registros.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('correccionForm');
+    const btnProcesar = document.getElementById('btnProcesar');
+    const processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
+    
+    // Manejar sugerencias
+    document.querySelectorAll('.accept-suggestion').forEach(button => {
+        button.addEventListener('click', function() {
+            const valor = this.dataset.value;
+            const cell = this.closest('.editable-cell');
+            const input = cell.querySelector('input');
+            input.value = valor;
+            input.dispatchEvent(new Event('change'));
+        });
+    });
+    
+    // Manejar cambios en los campos
+    document.querySelectorAll('input[type="text"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const sheet = this.dataset.sheet;
+            const row = this.dataset.row;
+            const field = this.dataset.field;
+            const value = this.value;
+            
+            // Aquí podrías implementar validación en tiempo real
+            validarCampo(sheet, row, field, value);
+        });
+    });
+    
+    // Preparar datos antes de enviar
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const data = prepararDatosFormulario();
+        document.getElementById('excel_data_corregido').value = JSON.stringify(data);
+        processingModal.show();
+        this.submit();
+    });
+    
+    // Función para validar campo
+    function validarCampo(sheet, row, field, value) {
+        fetch('{% url "importacion_excel:validar_columna" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                sheet: sheet,
+                row: row,
+                field: field,
+                value: value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Manejar respuesta de validación
+            actualizarRetroalimentacion(data);
+        });
+    }
+    
+    // Función para preparar datos del formulario
+    function prepararDatosFormulario() {
+        const data = {};
+        document.querySelectorAll('.sheet-section').forEach(section => {
+            const sheetName = section.querySelector('.card-title').textContent.trim();
+            data[sheetName] = [];
+            
+            section.querySelectorAll('tbody tr').forEach(row => {
+                const rowData = {};
+                row.querySelectorAll('input').forEach(input => {
+                    rowData[input.dataset.field] = input.value;
+                });
+                data[sheetName].push(rowData);
+            });
+        });
+        return data;
+    }
+    
+    // Función para actualizar retroalimentación
+    function actualizarRetroalimentacion(data) {
+        // Actualizar contadores y barras de progreso
+        const progress = document.querySelector('.validation-progress');
+        if (progress && data.progress) {
+            progress.querySelector('.progress-bar.bg-success').style.width = 
+                data.progress.valid_percent + '%';
+            progress.querySelector('.progress-bar.bg-warning').style.width = 
+                data.progress.warning_percent + '%';
+            progress.querySelector('.progress-bar.bg-danger').style.width = 
+                data.progress.error_percent + '%';
+        }
+        
+        // Actualizar sugerencias si las hay
+        if (data.sugerencias) {
+            // Implementar actualización de sugerencias
+        }
+    }
+});
+</script>
+{% endblock %} 

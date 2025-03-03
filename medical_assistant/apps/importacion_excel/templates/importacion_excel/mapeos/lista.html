@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mapeo de Columnas</h2>
+        <a href="{% url 'importacion_excel:crear_mapeo' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nuevo Mapeo
+        </a>
+    </div>
+
+    {% if mapeos %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Columna Excel</th>
+                                <th>Campo Modelo</th>
+                                <th>Transformación</th>
+                                <th>Requerido</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mapeo in mapeos %}
+                                <tr>
+                                    <td>{{ mapeo.nombre_columna_excel }}</td>
+                                    <td>{{ mapeo.campo_modelo }}</td>
+                                    <td>{{ mapeo.get_transformacion_display }}</td>
+                                    <td>
+                                        {% if mapeo.es_requerido %}
+                                            <span class="badge bg-primary">Sí</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'importacion_excel:editar_mapeo' mapeo.pk %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#eliminarModal{{ mapeo.pk }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal de confirmación -->
+                                        <div class="modal fade" id="eliminarModal{{ mapeo.pk }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Confirmar Eliminación</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        ¿Está seguro de que desea eliminar el mapeo 
+                                                        <strong>{{ mapeo.nombre_columna_excel }}</strong>?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <form method="post" 
+                                                              action="{% url 'importacion_excel:eliminar_mapeo' mapeo.pk %}">
+                                                            {% csrf_token %}
+                                                            <button type="button" 
+                                                                    class="btn btn-secondary" 
+                                                                    data-bs-dismiss="modal">Cancelar</button>
+                                                            <button type="submit" 
+                                                                    class="btn btn-danger">Eliminar</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No hay mapeos configurados. 
+            <a href="{% url 'importacion_excel:crear_mapeo' %}">Crear el primero</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

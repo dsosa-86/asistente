@@ -1,0 +1,563 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 2rem;
+    }
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .stats-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    .filters-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .stats-card {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .stats-number {
+        transition: all 0.3s ease;
+    }
+
+    .chart-container {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .update-animation {
+        animation: pulse 0.5s ease;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+
+    .filter-group button:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .loading-text {
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+    }
+
+    .toast {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 10px;
+        min-width: 300px;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .toast-success {
+        border-left: 4px solid #2ecc71;
+    }
+
+    .toast-error {
+        border-left: 4px solid #e74c3c;
+    }
+
+    .toast-warning {
+        border-left: 4px solid #f1c40f;
+    }
+
+    .toast-info {
+        border-left: 4px solid #3498db;
+    }
+
+    .retry-button {
+        background: none;
+        border: none;
+        color: #3498db;
+        cursor: pointer;
+        text-decoration: underline;
+        padding: 0;
+        margin-left: 10px;
+    }
+
+    .retry-button:hover {
+        color: #2980b9;
+    }
+
+    .retry-count {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Toast Container -->
+<div class="toast-container"></div>
+
+<div class="container-fluid py-4">
+    <h1 class="h3 mb-4">
+        <i class="fas fa-chart-line"></i> Estadísticas de Importación
+    </h1>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <h4 class="mb-3"><i class="fas fa-filter"></i> Filtros</h4>
+        <form id="statsFilters" class="row">
+            <div class="col-md-3 filter-group">
+                <label for="periodoFilter" class="form-label">Período</label>
+                <select id="periodoFilter" class="form-select">
+                    <option value="7">Última semana</option>
+                    <option value="30" selected>Último mes</option>
+                    <option value="90">Últimos 3 meses</option>
+                    <option value="180">Últimos 6 meses</option>
+                    <option value="365">Último año</option>
+                </select>
+            </div>
+            <div class="col-md-3 filter-group">
+                <label for="tipoFilter" class="form-label">Tipo de Importación</label>
+                <select id="tipoFilter" class="form-select">
+                    <option value="todos">Todos</option>
+                    <option value="AGENDA">Agenda</option>
+                    <option value="HISTORICOS">Históricos</option>
+                </select>
+            </div>
+            <div class="col-md-3 filter-group">
+                <label for="estadoFilter" class="form-label">Estado</label>
+                <select id="estadoFilter" class="form-select">
+                    <option value="todos">Todos</option>
+                    <option value="IMPORTADO">Importado</option>
+                    <option value="ERROR">Error</option>
+                    <option value="CORREGIDO">Corregido</option>
+                </select>
+            </div>
+            <div class="col-md-3 filter-group">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary d-block w-100" id="actualizarBtn">
+                    <i class="fas fa-sync"></i> Actualizar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resumen General -->
+    <div class="row mb-4">
+        {% for card in cards %}
+        <div class="col-md-3">
+            <div class="stats-card" id="card-{{ forloop.counter }}">
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+                <div class="stats-number">{{ card.value }}</div>
+                <div class="stats-label">{{ card.label }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Gráficos -->
+    <div class="row">
+        <!-- Tendencia de Importaciones -->
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Actualizando gráfico...</div>
+                </div>
+                <h4>Tendencia de Importaciones</h4>
+                <div class="chart-container">
+                    <canvas id="importacionesTrend"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribución por Estado -->
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Actualizando gráfico...</div>
+                </div>
+                <h4>Distribución por Estado</h4>
+                <div class="chart-container">
+                    <canvas id="estadosDistribucion"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Errores Comunes -->
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Actualizando gráfico...</div>
+                </div>
+                <h4>Errores más Comunes</h4>
+                <div class="chart-container">
+                    <canvas id="erroresComunes"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasa de Corrección -->
+        <div class="col-md-6">
+            <div class="stats-card">
+                <div class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Actualizando gráfico...</div>
+                </div>
+                <h4>Tasa de Corrección por Tipo</h4>
+                <div class="chart-container">
+                    <canvas id="tasaCorreccion"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let charts = {};
+let isUpdating = false;
+let retryCount = 0;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 segundos
+
+// Función para mostrar/ocultar indicadores de carga
+function toggleLoading(show) {
+    const overlays = document.querySelectorAll('.loading-overlay');
+    const actualizarBtn = document.getElementById('actualizarBtn');
+    
+    overlays.forEach(overlay => {
+        overlay.style.display = show ? 'flex' : 'none';
+    });
+    
+    actualizarBtn.disabled = show;
+    isUpdating = show;
+}
+
+// Función para animar actualizaciones
+function animateUpdate(element) {
+    element.classList.add('update-animation');
+    setTimeout(() => {
+        element.classList.remove('update-animation');
+    }, 500);
+}
+
+// Función para mostrar notificaciones toast
+function showToast(message, type = 'info', duration = 5000, retryCallback = null) {
+    const toastContainer = document.querySelector('.toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type} p-3`;
+    
+    let toastContent = `
+        <div class="d-flex align-items-center">
+            <div class="me-auto">${message}</div>
+    `;
+    
+    if (retryCallback) {
+        toastContent += `
+            <button class="retry-button" onclick="retryCallback()">
+                Reintentar
+            </button>
+            <span class="retry-count ms-2">(${retryCount}/${MAX_RETRIES})</span>
+        `;
+    }
+    
+    toastContent += '</div>';
+    toast.innerHTML = toastContent;
+    
+    toastContainer.appendChild(toast);
+    
+    // Forzar un reflow para activar la transición
+    toast.offsetHeight;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// Función para manejar reintentos
+async function retryOperation(operation, params) {
+    let error;
+    for (let i = 0; i < MAX_RETRIES; i++) {
+        try {
+            retryCount = i + 1;
+            const result = await operation(params);
+            retryCount = 0;
+            return result;
+        } catch (e) {
+            error = e;
+            if (i < MAX_RETRIES - 1) {
+                showToast(
+                    `Error: ${e.message}. Reintentando en ${RETRY_DELAY/1000} segundos...`,
+                    'warning',
+                    RETRY_DELAY
+                );
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            }
+        }
+    }
+    retryCount = 0;
+    throw error;
+}
+
+// Función para actualizar los datos con manejo de errores y reintentos
+async function actualizarEstadisticas(event) {
+    if (event) event.preventDefault();
+    if (isUpdating) return;
+    
+    toggleLoading(true);
+    showToast('Actualizando estadísticas...', 'info');
+    
+    const filtros = {
+        periodo: document.getElementById('periodoFilter').value,
+        tipo: document.getElementById('tipoFilter').value,
+        estado: document.getElementById('estadoFilter').value
+    };
+
+    try {
+        const data = await retryOperation(async () => {
+            const response = await fetch(`{% url 'importacion_excel:actualizar_estadisticas' %}?${new URLSearchParams(filtros)}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al actualizar estadísticas');
+            }
+            return response.json();
+        });
+
+        // Actualizar y animar tarjetas de resumen
+        const cards = document.querySelectorAll('.stats-card');
+        cards.forEach((card, index) => {
+            const numberElement = card.querySelector('.stats-number');
+            if (index === 0) numberElement.textContent = data.total_importaciones;
+            if (index === 1) numberElement.textContent = data.tasa_exito + '%';
+            if (index === 2) numberElement.textContent = data.promedio_registros;
+            if (index === 3) numberElement.textContent = data.total_errores;
+            animateUpdate(card);
+        });
+
+        // Actualizar gráficos con animación
+        await Promise.all([
+            actualizarGrafico('importacionesTrend', data.tendencia),
+            actualizarGrafico('estadosDistribucion', data.estados),
+            actualizarGrafico('erroresComunes', data.errores),
+            actualizarGrafico('tasaCorreccion', data.correccion)
+        ]);
+
+        showToast('Estadísticas actualizadas correctamente', 'success');
+
+    } catch (error) {
+        console.error('Error:', error);
+        showToast(
+            `Error al actualizar las estadísticas: ${error.message}`,
+            'error',
+            0,
+            () => actualizarEstadisticas(null)
+        );
+    } finally {
+        toggleLoading(false);
+    }
+}
+
+async function actualizarGrafico(id, nuevosData) {
+    const chart = charts[id];
+    if (chart) {
+        // Aplicar animación a la actualización
+        const animation = {
+            duration: 800,
+            easing: 'easeInOutQuart'
+        };
+
+        chart.data.labels = nuevosData.labels;
+        chart.data.datasets[0].data = nuevosData.datos;
+        await chart.update(animation);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuración común
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    };
+
+    // Inicializar gráficos
+    charts.importacionesTrend = new Chart(document.getElementById('importacionesTrend'), {
+        type: 'line',
+        data: {
+            labels: datosGraficos.tendencia.labels,
+            datasets: [{
+                label: 'Importaciones',
+                data: datosGraficos.tendencia.datos,
+                borderColor: '#3498db',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Importaciones'
+                    }
+                }
+            }
+        }
+    });
+
+    charts.estadosDistribucion = new Chart(document.getElementById('estadosDistribucion'), {
+        type: 'doughnut',
+        data: {
+            labels: datosGraficos.estados.labels,
+            datasets: [{
+                data: datosGraficos.estados.datos,
+                backgroundColor: [
+                    '#2ecc71',
+                    '#e74c3c',
+                    '#f1c40f',
+                    '#3498db',
+                    '#95a5a6'
+                ]
+            }]
+        },
+        options: commonOptions
+    });
+
+    charts.erroresComunes = new Chart(document.getElementById('erroresComunes'), {
+        type: 'bar',
+        data: {
+            labels: datosGraficos.errores.labels,
+            datasets: [{
+                label: 'Frecuencia',
+                data: datosGraficos.errores.datos,
+                backgroundColor: '#e74c3c'
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Ocurrencias'
+                    }
+                }
+            }
+        }
+    });
+
+    charts.tasaCorreccion = new Chart(document.getElementById('tasaCorreccion'), {
+        type: 'radar',
+        data: {
+            labels: datosGraficos.correccion.labels,
+            datasets: [{
+                label: 'Tasa de Éxito',
+                data: datosGraficos.correccion.datos,
+                borderColor: '#2ecc71',
+                backgroundColor: 'rgba(46, 204, 113, 0.2)'
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Inicializar gráficos y agregar event listeners
+    initializeCharts();
+    document.getElementById('statsFilters').addEventListener('submit', actualizarEstadisticas);
+});
+</script>
+{% endblock %} 

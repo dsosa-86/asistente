@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+<style>
+    .filtros-container {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .badge.bg-pendiente { background-color: #ffc107; }
+    .badge.bg-en_revision { background-color: #17a2b8; }
+    .badge.bg-corregido { background-color: #28a745; }
+    .badge.bg-importado { background-color: #007bff; }
+    .badge.bg-error { background-color: #dc3545; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-history"></i> Historial de Importaciones
+        </h1>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportarModal">
+            <i class="fas fa-file-export"></i> Exportar Datos
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filtros-container">
+        <form id="filtrosForm" class="row g-3">
+            <div class="col-md-2">
+                <label for="estado" class="form-label">Estado</label>
+                <select id="estado" name="estado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for estado_id, estado_nombre in estados %}
+                    <option value="{{ estado_id }}" {% if filtros.estado == estado_id %}selected{% endif %}>
+                        {{ estado_nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select id="tipo" name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for tipo_id, tipo_nombre in tipos %}
+                    <option value="{{ tipo_id }}" {% if filtros.tipo == tipo_id %}selected{% endif %}>
+                        {{ tipo_nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="fechas" class="form-label">Rango de Fechas</label>
+                <input type="text" id="fechas" class="form-control" 
+                       value="{{ filtros.fecha_desde|default:'' }} - {{ filtros.fecha_hasta|default:'' }}">
+                <input type="hidden" id="fecha_desde" name="fecha_desde" value="{{ filtros.fecha_desde|default:'' }}">
+                <input type="hidden" id="fecha_hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta|default:'' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label for="busqueda" class="form-label">Búsqueda</label>
+                <input type="text" id="busqueda" name="busqueda" class="form-control" 
+                       value="{{ filtros.busqueda|default:'' }}" 
+                       placeholder="Buscar por archivo o usuario...">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-primary me-2" id="aplicarFiltros">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                <button type="button" class="btn btn-secondary" id="limpiarFiltros">
+                    <i class="fas fa-broom"></i> Limpiar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contenedor para la tabla -->
+    <div id="tablaImportaciones">
+        {% include "importacion_excel/partials/tabla_importaciones.html" %}
+    </div>
+</div>
+
+<!-- Modal de Exportación -->
+{% include "importacion_excel/partials/exportar_modal.html" %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuración del selector de fechas
+    $('#fechas').daterangepicker({
+        locale: {
+            format: 'DD/MM/YYYY',
+            applyLabel: 'Aplicar',
+            cancelLabel: 'Cancelar',
+            fromLabel: 'Desde',
+            toLabel: 'Hasta',
+            customRangeLabel: 'Rango personalizado',
+            daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+            monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        },
+        autoUpdateInput: false
+    });
+
+    $('#fechas').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        $('#fecha_desde').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#fecha_hasta').val(picker.endDate.format('YYYY-MM-DD'));
+    });
+
+    // Función para cargar los datos filtrados
+    function cargarDatosFiltrados(page = 1) {
+        const params = new URLSearchParams({
+            estado: $('#estado').val(),
+            tipo: $('#tipo').val(),
+            fecha_desde: $('#fecha_desde').val(),
+            fecha_hasta: $('#fecha_hasta').val(),
+            busqueda: $('#busqueda').val(),
+            page: page
+        });
+
+        fetch(`{% url 'importacion_excel:filtrar_importaciones_ajax' %}?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                $('#tablaImportaciones').html(data.html);
+                
+                // Actualizar URL con los filtros
+                const newUrl = `${window.location.pathname}?${params}`;
+                history.pushState({}, '', newUrl);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar los datos. Por favor, intente nuevamente.');
+            });
+    }
+
+    // Event listeners
+    $('#aplicarFiltros').click(() => cargarDatosFiltrados());
+    
+    $('#limpiarFiltros').click(() => {
+        $('#filtrosForm')[0].reset();
+        $('#fecha_desde, #fecha_hasta').val('');
+        cargarDatosFiltrados();
+    });
+
+    // Manejar paginación
+    $(document).on('click', '.pagination .page-link', function(e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        cargarDatosFiltrados(page);
+    });
+
+    // Debounce para la búsqueda
+    let timeoutId;
+    $('#busqueda').on('input', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => cargarDatosFiltrados(), 500);
+    });
+});
+</script>
+{% endblock %} 

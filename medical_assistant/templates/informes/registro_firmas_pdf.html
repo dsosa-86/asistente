@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Firmas - Informe {{ informe.id }}</title>
+</head>
+<body>
+    <header class="pdf-header">
+        <h1>Registro de Firmas Digitales</h1>
+        <div class="metadata">
+            <p><strong>Informe:</strong> {{ informe.plantilla.nombre }}</p>
+            <p><strong>ID:</strong> {{ informe.id }}</p>
+            <p><strong>Fecha de Generación:</strong> {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+        </div>
+    </header>
+
+    <section class="informe-info">
+        <h2>Información del Informe</h2>
+        <table class="info-table">
+            <tr>
+                <th>Paciente:</th>
+                <td>{{ informe.paciente }}</td>
+                <th>Médico Principal:</th>
+                <td>Dr. {{ informe.medico }}</td>
+            </tr>
+            <tr>
+                <th>Fecha Creación:</th>
+                <td>{{ informe.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                <th>Estado:</th>
+                <td>{{ informe.get_estado_display }}</td>
+            </tr>
+        </table>
+    </section>
+
+    <section class="firmas-section">
+        <h2>Registro de Firmas</h2>
+        <table class="firmas-table">
+            <thead>
+                <tr>
+                    <th>Médico</th>
+                    <th>Rol</th>
+                    <th>Fecha y Hora</th>
+                    <th>Versión</th>
+                    <th>Dispositivo</th>
+                    <th>IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for firma in firmas %}
+                <tr>
+                    <td>Dr. {{ firma.medico }}</td>
+                    <td>{{ firma.get_rol_display }}</td>
+                    <td>{{ firma.fecha_firma|date:"d/m/Y H:i" }}</td>
+                    <td>{% if firma.version %}V{{ firma.version.version }}{% else %}Original{% endif %}</td>
+                    <td>{{ firma.dispositivo }}</td>
+                    <td>{{ firma.ip_firma }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="versiones-section">
+        <h2>Historial de Versiones</h2>
+        <table class="versiones-table">
+            <thead>
+                <tr>
+                    <th>Versión</th>
+                    <th>Médico</th>
+                    <th>Fecha Modificación</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for version in versiones %}
+                <tr>
+                    <td>V{{ version.version }}</td>
+                    <td>Dr. {{ version.medico_modificacion }}</td>
+                    <td>{{ version.fecha_modificacion|date:"d/m/Y H:i" }}</td>
+                    <td>{{ version.motivo_modificacion }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <footer class="pdf-footer">
+        <div class="footer-content">
+            <p>Documento generado por: Dr. {{ generado_por }}</p>
+            <p>Fecha y hora: {{ fecha_generacion|date:"d/m/Y H:i" }}</p>
+            <p class="footer-page">Página <span class="page"></span> de <span class="topage"></span></p>
+        </div>
+    </footer>
+</body>
+</html> 

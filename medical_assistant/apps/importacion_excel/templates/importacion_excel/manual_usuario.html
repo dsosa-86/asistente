@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Manual de Usuario - Importación Excel</h1>
+
+    <div class="row">
+        <!-- Índice -->
+        <div class="col-md-3">
+            <div class="sticky-top pt-3">
+                <div class="list-group">
+                    <a href="#introduccion" class="list-group-item list-group-item-action">Introducción</a>
+                    <a href="#requisitos" class="list-group-item list-group-item-action">Requisitos</a>
+                    <a href="#proceso" class="list-group-item list-group-item-action">Proceso de Importación</a>
+                    <a href="#validacion" class="list-group-item list-group-item-action">Validación de Datos</a>
+                    <a href="#errores" class="list-group-item list-group-item-action">Manejo de Errores</a>
+                    <a href="#exportacion" class="list-group-item list-group-item-action">Exportación</a>
+                    <a href="#faq" class="list-group-item list-group-item-action">FAQ</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido -->
+        <div class="col-md-9">
+            <!-- Introducción -->
+            <section id="introduccion" class="mb-5">
+                <h2>Introducción</h2>
+                <p class="lead">
+                    El módulo de importación Excel permite cargar datos masivamente al sistema
+                    desde archivos Excel (.xlsx, .xls).
+                </p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Este manual te guiará paso a paso en el proceso de importación.
+                </div>
+            </section>
+
+            <!-- Requisitos -->
+            <section id="requisitos" class="mb-5">
+                <h2>Requisitos</h2>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Formato del Archivo</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success"></i>
+                                Archivo Excel (.xlsx, .xls)
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success"></i>
+                                Tamaño máximo: 5MB
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check text-success"></i>
+                                Sin macros ni contenido ejecutable
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Proceso de Importación -->
+            <section id="proceso" class="mb-5">
+                <h2>Proceso de Importación</h2>
+                <div class="accordion" id="accordionProceso">
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#paso1">
+                                Paso 1: Selección de Archivo
+                            </button>
+                        </h3>
+                        <div id="paso1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>Haz clic en "Seleccionar archivo" o arrastra el archivo a la zona indicada</li>
+                                    <li>Selecciona el tipo de importación</li>
+                                    <li>Verifica la previsualización de los datos</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso2">
+                                Paso 2: Validación
+                            </button>
+                        </h3>
+                        <div id="paso2" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <ul>
+                                    <li>El sistema validará automáticamente los datos</li>
+                                    <li>Se mostrarán advertencias y errores si los hay</li>
+                                    <li>Corrige los errores señalados antes de continuar</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paso3">
+                                Paso 3: Procesamiento
+                            </button>
+                        </h3>
+                        <div id="paso3" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <ul>
+                                    <li>Haz clic en "Procesar"</li>
+                                    <li>Espera a que finalice el procesamiento</li>
+                                    <li>Revisa el resumen de la importación</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Validación de Datos -->
+            <section id="validacion" class="mb-5">
+                <h2>Validación de Datos</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Campo</th>
+                                <th>Validación</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>DNI</td>
+                                <td>8 dígitos numéricos</td>
+                                <td>12345678</td>
+                            </tr>
+                            <tr>
+                                <td>Email</td>
+                                <td>Formato válido de email</td>
+                                <td>usuario@dominio.com</td>
+                            </tr>
+                            <tr>
+                                <td>Fecha</td>
+                                <td>Formato DD/MM/YYYY</td>
+                                <td>25/12/2024</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Manejo de Errores -->
+            <section id="errores" class="mb-5">
+                <h2>Manejo de Errores</h2>
+                <div class="card mb-3">
+                    <div class="card-header bg-danger text-white">
+                        Errores Comunes
+                    </div>
+                    <div class="card-body">
+                        <dl>
+                            <dt>Error de formato</dt>
+                            <dd>El archivo no cumple con el formato requerido</dd>
+                            
+                            <dt>Datos inválidos</dt>
+                            <dd>Los datos no cumplen con las validaciones</dd>
+                            
+                            <dt>Archivo demasiado grande</dt>
+                            <dd>El archivo excede el tamaño máximo permitido</dd>
+                        </dl>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Exportación -->
+            <section id="exportacion" class="mb-5">
+                <h2>Exportación</h2>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Excel</h5>
+                                <p class="card-text">Exporta los datos en formato Excel</p>
+                                <a href="#" class="btn btn-primary">
+                                    <i class="fas fa-file-excel"></i> Exportar Excel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">CSV</h5>
+                                <p class="card-text">Exporta los datos en formato CSV</p>
+                                <a href="#" class="btn btn-primary">
+                                    <i class="fas fa-file-csv"></i> Exportar CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">PDF</h5>
+                                <p class="card-text">Exporta los datos en formato PDF</p>
+                                <a href="#" class="btn btn-primary">
+                                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="mb-5">
+                <h2>Preguntas Frecuentes</h2>
+                <div class="accordion" id="accordionFAQ">
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                ¿Qué hago si el archivo no se procesa?
+                            </button>
+                        </h3>
+                        <div id="faq1" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                Verifica que el archivo cumpla con todos los requisitos y no tenga errores de formato.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                ¿Cómo corrijo errores en los datos?
+                            </button>
+                        </h3>
+                        <div id="faq2" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                Puedes corregir los errores directamente en la interfaz de revisión antes de procesar.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                ¿Puedo cancelar una importación en proceso?
+                            </button>
+                        </h3>
+                        <div id="faq3" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                Sí, puedes cancelar la importación en cualquier momento usando el botón "Cancelar".
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activar todos los tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+    // Scroll suave para enlaces internos
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,132 @@
+/* Estilos específicos para el protocolo de bloqueo fino */
+
+/* Variables de diseño - Fáciles de modificar */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --text-color: #333;
+    --border-color: #bdc3c7;
+    --background-color: #fff;
+    --header-font: 'Arial', sans-serif;
+    --body-font: 'Times New Roman', serif;
+}
+
+/* Estructura general */
+body {
+    font-family: var(--body-font);
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
+    padding: 20mm;
+    background: var(--background-color);
+}
+
+/* Encabezado del protocolo */
+.protocolo-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.protocolo-header h1 {
+    font-family: var(--header-font);
+    color: var(--primary-color);
+    margin: 0 0 15px 0;
+    font-size: 24pt;
+}
+
+.info-paciente {
+    text-align: left;
+    margin: 15px 0;
+}
+
+.info-paciente p {
+    margin: 5px 0;
+}
+
+/* Sección de procedimiento */
+.procedimiento {
+    margin: 20px 0;
+}
+
+.procedimiento h2 {
+    color: var(--secondary-color);
+    font-size: 14pt;
+    margin-bottom: 10px;
+}
+
+/* Sección de técnica */
+.tecnica {
+    margin: 20px 0;
+}
+
+.tecnica h2 {
+    color: var(--secondary-color);
+    font-size: 14pt;
+}
+
+/* Listas de materiales y medicamentos */
+.materiales, .medicamentos {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.materiales ul, .medicamentos ul {
+    list-style-type: disc;
+    margin: 5px 0;
+}
+
+/* Estado del paciente */
+.estado-paciente {
+    margin: 20px 0;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background-color: #f9f9f9;
+}
+
+/* Indicaciones */
+.indicaciones {
+    margin: 20px 0;
+    font-weight: bold;
+}
+
+/* Sección de firmas */
+.firmas {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.firma {
+    text-align: center;
+    margin: 10px;
+    min-width: 200px;
+}
+
+.firma img {
+    max-width: 150px;
+    height: auto;
+}
+
+.firma p {
+    margin: 2px 0;
+}
+
+/* Estilos para impresión */
+@media print {
+    body {
+        padding: 0;
+        margin: 10mm;
+    }
+
+    .firma img {
+        max-width: 100px;
+    }
+
+    /* Evitar saltos de página en lugares incorrectos */
+    .procedimiento, .tecnica, .estado-paciente, .firmas {
+        page-break-inside: avoid;
+    }
+} 

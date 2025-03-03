@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Importar Datos desde Excel</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="formImportacion">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="tipo_importacion" class="form-label">Tipo de Importación</label>
+                            <select name="tipo_importacion" id="tipo_importacion" class="form-select" required>
+                                <option value="AGENDA">Agenda de Turnos</option>
+                                <option value="HISTORICOS">Datos Históricos</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="archivo" class="form-label">Seleccionar Archivo Excel</label>
+                            <input type="file" name="archivo" id="archivo" class="form-control" accept=".xlsx,.xls" required>
+                            <div class="form-text">
+                                Formatos soportados: .xlsx, .xls
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Subir Archivo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Importaciones Recientes</h5>
+                </div>
+                <div class="card-body">
+                    {% if importaciones_recientes %}
+                        <div class="list-group">
+                            {% for imp in importaciones_recientes %}
+                                <a href="{% url 'ver_resultados' imp.pk %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ imp.get_tipo_importacion_display }}</h6>
+                                        <small>{{ imp.fecha_subida|date:"d/m/Y H:i" }}</small>
+                                    </div>
+                                    <p class="mb-1">Estado: {{ imp.get_estado_display }}</p>
+                                    <small>{{ imp.registros_procesados }} registros procesados</small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No hay importaciones recientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formImportacion');
+    const fileInput = document.getElementById('archivo');
+
+    form.addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        if (file && file.size > 5 * 1024 * 1024) { // 5MB
+            e.preventDefault();
+            alert('El archivo es demasiado grande. El tamaño máximo permitido es 5MB.');
+        }
+    });
+});
+</script>
+{% endblock %} 

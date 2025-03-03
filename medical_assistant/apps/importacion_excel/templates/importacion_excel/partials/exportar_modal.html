@@ -1,0 +1,98 @@
+<!-- Modal de Exportación -->
+<div class="modal fade" id="exportarModal" tabindex="-1" aria-labelledby="exportarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportarModalLabel">
+                    <i class="fas fa-file-export"></i> Exportar Datos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportarForm" action="{% url 'importacion_excel:exportar_datos' %}" method="GET">
+                    <!-- Tipo de Reporte -->
+                    <div class="mb-3">
+                        <label for="tipo_reporte" class="form-label">Tipo de Reporte</label>
+                        <select id="tipo_reporte" name="tipo_reporte" class="form-select" required>
+                            <option value="completo">Reporte Completo</option>
+                            <option value="resumen">Resumen de Importaciones</option>
+                            <option value="errores">Registro de Errores</option>
+                        </select>
+                        <div class="form-text">
+                            Seleccione el tipo de información que desea exportar.
+                        </div>
+                    </div>
+
+                    <!-- Formato de Exportación -->
+                    <div class="mb-3">
+                        <label for="formato" class="form-label">Formato de Archivo</label>
+                        <select id="formato" name="formato" class="form-select" required>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+
+                    <!-- Rango de Fechas -->
+                    <div class="mb-3">
+                        <label for="fechas_exportacion" class="form-label">Rango de Fechas</label>
+                        <input type="text" id="fechas_exportacion" class="form-control" placeholder="Seleccione un rango">
+                        <input type="hidden" id="fecha_inicio" name="fecha_inicio">
+                        <input type="hidden" id="fecha_fin" name="fecha_fin">
+                    </div>
+
+                    <!-- Opciones Adicionales -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluir_estadisticas" name="incluir_estadisticas">
+                            <label class="form-check-label" for="incluir_estadisticas">
+                                Incluir Estadísticas
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="submit" form="exportarForm" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar DateRangePicker para exportación
+    $('#fechas_exportacion').daterangepicker({
+        locale: {
+            format: 'DD/MM/YYYY',
+            applyLabel: 'Aplicar',
+            cancelLabel: 'Cancelar',
+            fromLabel: 'Desde',
+            toLabel: 'Hasta',
+            customRangeLabel: 'Rango personalizado',
+            daysOfWeek: ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa'],
+            monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        },
+        autoUpdateInput: false
+    });
+
+    $('#fechas_exportacion').on('apply.daterangepicker', function(ev, picker) {
+        $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        $('#fecha_inicio').val(picker.startDate.format('YYYY-MM-DD'));
+        $('#fecha_fin').val(picker.endDate.format('YYYY-MM-DD'));
+    });
+
+    // Validación del formulario
+    $('#exportarForm').on('submit', function(e) {
+        if (!$('#fecha_inicio').val() || !$('#fecha_fin').val()) {
+            e.preventDefault();
+            alert('Por favor, seleccione un rango de fechas para la exportación.');
+        }
+    });
+});
+</script> 

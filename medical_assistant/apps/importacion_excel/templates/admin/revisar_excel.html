@@ -1,0 +1,102 @@
+{% extends "admin/custom_admin_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+    <h1 class="h3 mb-3">
+        <i class="fas fa-edit"></i> Revisión y corrección de datos
+    </h1>
+
+    {# Sección de errores generales: se muestran todos, pero el contenedor tiene altura fija para mostrar aproximadamente 7 registros #}
+    {% if errores %}
+    <div class="alert alert-danger mt-3" style="max-height:210px; overflow-y:auto;">
+        <h4 class="alert-heading">
+            <i class="fas fa-exclamation-circle"></i> Errores detectados
+        </h4>
+        <ul>
+            {% for error in errores %}
+                <li><strong>{{ error.contexto }}:</strong> {{ error.mensaje }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form id="correccionForm" method="post" action="{% url 'guardar_correcciones' %}">
+        {% csrf_token %}
+        {# Itera sobre cada hoja y muestra una tabla editable de sus registros #}
+        {% for sheet, registros in datos.items %}
+        <div class="sheet-section my-4">
+            <h3 class="h4 mb-3">
+                <i class="fas fa-table"></i> {{ sheet }}
+            </h3>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            {% if registros|length > 0 %}
+                                {# Se asume que todos los registros tienen las mismas claves, se utiliza el primero para generar el encabezado #}
+                                {% for key, value in registros.0.items %}
+                                    <th>{{ key }}</th>
+                                {% endfor %}
+                            {% else %}
+                                <th>No hay registros</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for registro in registros %}
+                        <tr>
+                            {% for key, value in registro.items %}
+                            <td>
+                                <input type="text" class="form-control" data-key="{{ key }}" value="{{ value }}">
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {# Guarda el nombre de la hoja en un input oculto para su reconstrucción #}
+            <input type="hidden" class="sheet-name" value="{{ sheet }}">
+        </div>
+        {% endfor %}
+
+        {# Campo oculto para almacenar el JSON con las correcciones #}
+        <input type="hidden" id="excel_data_corregido" name="excel_data_corregido" value="">
+
+        <div class="action-buttons mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar correcciones
+            </button>
+            <a href="{% url 'admin:importacion_excel_excelimport_changelist' %}" class="btn btn-primary action-button ms-2">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Antes de enviar el formulario, se reconstruye el JSON de las correcciones.
+    document.getElementById('correccionForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var data = {};
+        var sheetSections = document.querySelectorAll('.sheet-section');
+        sheetSections.forEach(function(section) {
+            var sheetName = section.querySelector('.sheet-name').value;
+            data[sheetName] = [];
+            var rows = section.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+                var rowData = {};
+                row.querySelectorAll('td input').forEach(function(input) {
+                    var key = input.getAttribute('data-key');
+                    rowData[key] = input.value.trim();
+                });
+                data[sheetName].push(rowData);
+            });
+        });
+        var jsonData = JSON.stringify(data);
+        document.getElementById('excel_data_corregido').value = jsonData;
+        this.submit();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "importacion_excel/base.html" %}
+
+{% block importacion_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Importar Archivo Excel</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        {{ form.tipo_importacion.label_tag }}
+                        {{ form.tipo_importacion }}
+                        {% if form.tipo_importacion.help_text %}
+                        <small class="form-text text-muted">{{ form.tipo_importacion.help_text }}</small>
+                        {% endif %}
+                        {% if form.tipo_importacion.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.tipo_importacion.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="dropzone mb-4">
+                        <div class="dz-message">
+                            <i class="fas fa-file-excel fa-3x mb-3"></i>
+                            <h4>Arrastra tu archivo Excel aquí</h4>
+                            <p class="text-muted">o haz clic para seleccionar</p>
+                        </div>
+                        {{ form.archivo }}
+                        {% if form.archivo.help_text %}
+                        <small class="form-text text-muted">{{ form.archivo.help_text }}</small>
+                        {% endif %}
+                        {% if form.archivo.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.archivo.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Importar Archivo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Importaciones Recientes</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for importacion in importaciones_recientes %}
+                    <a href="{% url 'importacion_excel:ver_resultados' pk=importacion.pk %}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ importacion.get_tipo_importacion_display }}</h6>
+                            <small>{{ importacion.fecha_subida|timesince }}</small>
+                        </div>
+                        <p class="mb-1">
+                            <span class="badge status-{{ importacion.estado }}">
+                                {{ importacion.get_estado_display }}
+                            </span>
+                        </p>
+                        <small>
+                            {{ importacion.registros_procesados }}/{{ importacion.registros_totales }} registros
+                        </small>
+                    </a>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        No hay importaciones recientes
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Ayuda</h5>
+            </div>
+            <div class="card-body">
+                <h6>Tipos de Importación</h6>
+                <ul class="mb-3">
+                    <li><strong>Agenda:</strong> Importar datos de turnos y citas</li>
+                    <li><strong>Históricos:</strong> Importar historias clínicas y datos pasados</li>
+                </ul>
+                
+                <h6>Formatos Soportados</h6>
+                <ul class="mb-3">
+                    <li>.xlsx (Excel 2007+)</li>
+                    <li>.xls (Excel 97-2003)</li>
+                </ul>
+                
+                <h6>Límites</h6>
+                <ul class="mb-0">
+                    <li>Tamaño máximo: 5MB</li>
+                    <li>Máximo de registros: 10,000</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('importForm');
+    const fileInput = form.querySelector('input[type="file"]');
+    
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            // Validar tamaño
+            if (file.size > 5 * 1024 * 1024) {
+                alert('El archivo no debe superar los 5MB');
+                this.value = '';
+                return;
+            }
+            
+            // Validar extensión
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (!['xlsx', 'xls'].includes(ext)) {
+                alert('Solo se permiten archivos Excel (.xlsx, .xls)');
+                this.value = '';
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ titulo }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="mapeoForm">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}
+                                        <span class="text-danger">*</span>
+                                    {% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="alert alert-danger mt-1">
+                                        {{ field.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'importacion_excel:lista_mapeos' %}" 
+                               class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('mapeoForm');
+    const transformacionSelect = document.getElementById('id_transformacion');
+    const funcionTransformacionDiv = document.getElementById('div_id_funcion_transformacion');
+
+    // Mostrar/ocultar campo de función personalizada según la transformación seleccionada
+    function toggleFuncionTransformacion() {
+        if (transformacionSelect.value === 'CUSTOM') {
+            funcionTransformacionDiv.style.display = 'block';
+        } else {
+            funcionTransformacionDiv.style.display = 'none';
+        }
+    }
+
+    transformacionSelect.addEventListener('change', toggleFuncionTransformacion);
+    toggleFuncionTransformacion(); // Estado inicial
+});
+</script>
+{% endblock %}
+{% endblock %} 

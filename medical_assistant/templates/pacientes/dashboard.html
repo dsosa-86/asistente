@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - {{ paciente.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Información del Paciente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar avatar-xl bg-gradient-primary rounded-circle">
+                            {{ paciente.nombre|first }}{{ paciente.apellido|first }}
+                        </div>
+                        <div class="ms-3">
+                            <h4 class="mb-1">{{ paciente.nombre_completo }}</h4>
+                            <p class="text-sm mb-0">
+                                DNI: {{ paciente.dni }} | 
+                                Edad: {{ paciente.edad }} años |
+                                Obra Social: {{ paciente.obra_social|default:"No registrada" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Consultas Totales</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ estadisticas.total_consultas }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
+                                <i class="ni ni-calendar-grid-58 text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Estudios Pendientes</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ estadisticas.estudios_pendientes }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
+                                <i class="ni ni-paper-diploma text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Operaciones Realizadas</p>
+                                <h5 class="font-weight-bolder mb-0">
+                                    {{ estadisticas.operaciones_realizadas }}
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
+                                <i class="ni ni-scissors text-lg opacity-10" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="row">
+        <!-- Estudios Pendientes -->
+        <div class="col-12 col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header pb-0">
+                    <h6>Estudios Prequirúrgicos Pendientes</h6>
+                </div>
+                <div class="card-body p-3">
+                    {% if estudios_pendientes %}
+                        {% for estudio in estudios_pendientes %}
+                        <div class="timeline timeline-one-side">
+                            <div class="timeline-block mb-3">
+                                <span class="timeline-step">
+                                    <i class="ni ni-paper-diploma text-warning text-gradient"></i>
+                                </span>
+                                <div class="timeline-content">
+                                    <h6 class="text-dark text-sm font-weight-bold mb-0">
+                                        {{ estudio.estudio.nombre }}
+                                    </h6>
+                                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
+                                        Estado: {{ estudio.get_estado_display }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted my-4">No hay estudios pendientes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Próximas Operaciones -->
+        <div class="col-12 col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header pb-0">
+                    <h6>Próximas Operaciones</h6>
+                </div>
+                <div class="card-body p-3">
+                    {% if proximas_operaciones %}
+                        {% for operacion in proximas_operaciones %}
+                        <div class="timeline timeline-one-side">
+                            <div class="timeline-block mb-3">
+                                <span class="timeline-step">
+                                    <i class="ni ni-scissors text-info text-gradient"></i>
+                                </span>
+                                <div class="timeline-content">
+                                    <h6 class="text-dark text-sm font-weight-bold mb-0">
+                                        {{ operacion.tipo_cirugia }}
+                                    </h6>
+                                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
+                                        {{ operacion.fecha_programada|date:"d/m/Y H:i" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted my-4">No hay operaciones programadas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Consultas -->
+        <div class="col-12 col-xl-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header pb-0">
+                    <h6>Últimas Consultas</h6>
+                </div>
+                <div class="card-body p-3">
+                    {% if ultimas_consultas %}
+                        {% for consulta in ultimas_consultas %}
+                        <div class="timeline timeline-one-side">
+                            <div class="timeline-block mb-3">
+                                <span class="timeline-step">
+                                    <i class="ni ni-single-copy-04 text-success text-gradient"></i>
+                                </span>
+                                <div class="timeline-content">
+                                    <h6 class="text-dark text-sm font-weight-bold mb-0">
+                                        {{ consulta.medico }}
+                                    </h6>
+                                    <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">
+                                        {{ consulta.fecha_hora|date:"d/m/Y H:i" }}
+                                    </p>
+                                    {% if consulta.diagnostico %}
+                                    <p class="text-sm mt-2 mb-0">
+                                        {{ consulta.diagnostico|truncatechars:100 }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted my-4">No hay consultas registradas</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Aquí podemos agregar JavaScript adicional si es necesario
+</script>
+{% endblock %} 

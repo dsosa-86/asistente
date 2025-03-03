@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Configuración de Notificaciones{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/notificaciones/notificaciones.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Configuración de Notificaciones</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h4 class="mb-3">Canales de Notificación</h4>
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" class="form-check-input" id="email_activo" name="email_activo" 
+                                       {% if config.email_activo %}checked{% endif %}>
+                                <label class="form-check-label" for="email_activo">
+                                    <i class="fas fa-envelope text-primary"></i> Recibir notificaciones por correo electrónico
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mt-2">
+                                <input type="checkbox" class="form-check-input" id="sms_activo" name="sms_activo"
+                                       {% if config.sms_activo %}checked{% endif %}>
+                                <label class="form-check-label" for="sms_activo">
+                                    <i class="fas fa-sms text-success"></i> Recibir notificaciones por SMS
+                                </label>
+                            </div>
+                            
+                            <div class="form-check form-switch mt-2">
+                                <input type="checkbox" class="form-check-input" id="sistema_activo" name="sistema_activo"
+                                       {% if config.sistema_activo %}checked{% endif %}>
+                                <label class="form-check-label" for="sistema_activo">
+                                    <i class="fas fa-bell text-warning"></i> Recibir notificaciones en el sistema
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <h4 class="mb-3">Horarios de Notificación</h4>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="horario_inicio" class="form-label">Hora de inicio</label>
+                                <input type="time" class="form-control" id="horario_inicio" name="horario_inicio"
+                                       value="{{ config.horario_inicio|time:'H:i' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="horario_fin" class="form-label">Hora de fin</label>
+                                <input type="time" class="form-control" id="horario_fin" name="horario_fin"
+                                       value="{{ config.horario_fin|time:'H:i' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input type="checkbox" class="form-check-input" id="dias_habiles" name="dias_habiles"
+                                   {% if config.dias_habiles %}checked{% endif %}>
+                            <label class="form-check-label" for="dias_habiles">
+                                <i class="fas fa-calendar-week"></i> Solo recibir notificaciones en días hábiles
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Guardar Configuración
+                            </button>
+                            <a href="{% url 'notificaciones:lista' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver a Notificaciones
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notificaciones/configuracion.js' %}"></script>
+{% endblock %} 

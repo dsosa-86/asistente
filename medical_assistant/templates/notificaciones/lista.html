@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notificaciones{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/notificaciones/notificaciones.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Notificaciones</h1>
+                <div class="btn-group">
+                    <a href="{% url 'notificaciones:configuracion' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-cog"></i> Configuración
+                    </a>
+                    {% if notificaciones %}
+                    <form action="{% url 'notificaciones:marcar_todas_leidas' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-check-double"></i> Marcar todas como leídas
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if notificaciones %}
+            <div class="list-group">
+                {% for notificacion in notificaciones %}
+                <div class="list-group-item list-group-item-action {% if notificacion.estado == 'PENDIENTE' %}unread{% endif %}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">
+                            {% if notificacion.tipo == 'EMAIL' %}
+                            <i class="fas fa-envelope text-primary"></i>
+                            {% elif notificacion.tipo == 'SMS' %}
+                            <i class="fas fa-sms text-success"></i>
+                            {% else %}
+                            <i class="fas fa-bell text-warning"></i>
+                            {% endif %}
+                            {{ notificacion.titulo }}
+                        </h5>
+                        <small class="text-muted">
+                            {{ notificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+                    <p class="mb-1">{{ notificacion.mensaje }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <small>
+                            <span class="badge {% if notificacion.prioridad == 'ALTA' %}bg-danger{% elif notificacion.prioridad == 'MEDIA' %}bg-warning{% else %}bg-info{% endif %}">
+                                {{ notificacion.get_prioridad_display }}
+                            </span>
+                            <span class="badge {% if notificacion.estado == 'LEIDO' %}bg-secondary{% elif notificacion.estado == 'ERROR' %}bg-danger{% else %}bg-primary{% endif %}">
+                                {{ notificacion.get_estado_display }}
+                            </span>
+                        </small>
+                        {% if notificacion.estado != 'LEIDO' %}
+                        <form action="{% url 'notificaciones:marcar_leida' notificacion.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-check"></i> Marcar como leída
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if notificaciones.has_other_pages %}
+            <nav aria-label="Paginación de notificaciones" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if notificaciones.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notificaciones.previous_page_number }}">Anterior</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in notificaciones.paginator.page_range %}
+                    <li class="page-item {% if notificaciones.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if notificaciones.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ notificaciones.next_page_number }}">Siguiente</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No tienes notificaciones.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notificaciones/notificaciones.js' %}"></script>
+{% endblock %} 

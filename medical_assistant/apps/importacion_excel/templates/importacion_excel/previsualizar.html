@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Previsualización de Datos</h4>
+                    <div>
+                        <button class="btn btn-light" id="btnProcesar">
+                            <i class="fas fa-check me-2"></i>Procesar Datos
+                        </button>
+                        <a href="{% url 'importacion_excel:importar_excel' %}" class="btn btn-light">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="sheetTabs" role="tablist">
+                        {% for sheet_name in sheet_names %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                    id="tab-{{ forloop.counter }}" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#content-{{ forloop.counter }}" 
+                                    type="button" 
+                                    role="tab">
+                                {{ sheet_name }}
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="tab-content mt-3" id="sheetContent">
+                        {% for sheet_name, table in tables.items %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="content-{{ forloop.counter }}" 
+                             role="tabpanel">
+                            <div class="table-responsive">
+                                {{ table|safe }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Procesamiento -->
+<div class="modal fade" id="processingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Procesando...</span>
+                </div>
+                <h5>Procesando datos...</h5>
+                <p class="text-muted">Por favor, espere mientras validamos los datos.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Token CSRF para peticiones AJAX -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<!-- Datos JSON para procesamiento -->
+<script type="application/json" id="excelData">
+    {{ data_json|safe }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener referencias a elementos
+    const btnProcesar = document.getElementById('btnProcesar');
+    const processingModal = new bootstrap.Modal(document.getElementById('processingModal'));
+    
+    // Obtener datos JSON del elemento script
+    const excelData = JSON.parse(document.getElementById('excelData').textContent);
+    
+    // Manejar clic en botón procesar
+    btnProcesar.addEventListener('click', function() {
+        processingModal.show();
+        
+        // Preparar datos para envío
+        const formData = new FormData();
+        formData.append('excel_data', JSON.stringify(excelData));
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Enviar petición
+        fetch('{% url "importacion_excel:revisar_excel" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            processingModal.hide();
+            document.open();
+            document.write(html);
+            document.close();
+        })
+        .catch(error => {
+            processingModal.hide();
+            alert('Error al procesar los datos: ' + error);
+        });
+    });
+});
+</script>
+{% endblock %} 

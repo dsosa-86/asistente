@@ -1,0 +1,204 @@
+/* static/css/base.css */
+
+/* ----- Contenedor general ----- */
+.excel-preview-container {
+    padding: 20px;
+    max-width: 95%;
+    margin: 0 auto;
+    background-color: #f8f9fa; /* Fondo claro para contraste */
+  }
+  
+  /* ----- Estilos de las secciones de hojas ----- */
+  .sheet-content {
+    margin-top: 20px;
+    overflow-x: auto;
+  }
+  
+  .table-container {
+    margin-top: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  /* ----- Tablas (Se han eliminado estilos heredados de versiones anteriores) ----- */
+  .table {
+    margin-bottom: 0;
+  }
+  
+  /* Encabezados de tablas: forzamos alto contraste */
+  .table th {
+    background-color: #343a40 !important; /* Fondo oscuro */
+    color: #fff !important;              /* Texto blanco */
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border: 1px solid #dee2e6;
+    padding: 8px;
+  }
+  
+  /* ----- Controles: selector y encabezado ----- */
+  .controls-container {
+    background-color: #fff;
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  
+  /* El selector se conserva igual */
+  .form-select {
+    padding: 0.5rem 1rem;
+    height: auto;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+  }
+  
+  .form-select:hover {
+    border-color: #b3d7ff;
+  }
+  
+  .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+  
+  /* ----- Contenedores de mensajes ----- */
+  /* Contenedor de errores: ahora se muestran todos pero con altura fija para ver aproximadamente 7 errores */
+  .error-list {
+    max-height: 210px;
+    overflow-y: auto;
+    padding-right: 10px; /* espacio para scrollbar */
+  }
+  
+  /* Contenedor de advertencias (ya existente, atento a que se muestre scroll) */
+  .warning-list {
+    max-height: 300px;  /* Altura para aproximadamente 7 advertencias */
+    overflow-y: auto;
+    border-radius: 4px;
+    padding-right: 10px;
+  }
+  
+  .warning-list ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .warning-list li {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    background-color: rgba(255, 243, 205, 0.5);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  
+  .warning-list li strong {
+    color: #856404;
+  }
+  
+  .warning-list li small {
+    display: block;
+    margin-top: 4px;
+    color: #666;
+    font-style: italic;
+  }
+  
+  /* Scroll personalizado para advertencias (se mantiene igual) */
+  .warning-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .warning-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  .warning-list::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 4px;
+  }
+  
+  .warning-list::-webkit-scrollbar-thumb:hover {
+    background: #e0a800;
+  }
+  
+  /* ----- Botones de acción ----- */
+  .action-buttons {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .action-button {
+    transition: all 0.2s ease;
+    opacity: 0.95;
+    color: white !important;
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+  }
+  
+  .action-button:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    filter: brightness(105%);
+    color: white !important;
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+  }
+  
+  a.action-button {
+    display: inline-block;
+    text-decoration: none;
+  }
+  
+  /* ----- Opcionales: estilos de celdas en tablas de advertencia (si se usan en otros contextos) ----- */
+  .cell-error {
+    background-color: #ffebee !important;
+  }
+  
+  .cell-warning {
+    background-color: #fff3e0 !important;
+  }
+  
+  .cell-empty {
+    background-color: #f5f5f5 !important;
+  }
+  
+  /* Iconos en celdas de error o warning */
+  .cell-error:after {
+    content: "⚠️";
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .cell-warning:after {
+    content: "❗";
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  /* contenedores de correccion */
+  .sheet-section { 
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 350px;
+    min-width: 600px; /* Aumenta el ancho mínimo */
+    background-color: #ffffff; /* Fondo claro para contraste */
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+ }
+
+ .table td input.form-control { 
+    min-width: 100px; /* O el valor que consideres apropiado */ 
+}
+
+  /* ----- Fin de archivo ----- */
+  

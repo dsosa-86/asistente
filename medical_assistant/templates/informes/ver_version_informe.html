@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Versión {{ version.version }} del Informe</h2>
+                <div>
+                    <a href="{% url 'informes:editar_informe' informe.id %}" class="btn btn-secondary">Volver a Edición</a>
+                    {% if version.archivo_generado %}
+                    <a href="{{ version.archivo_generado.url }}" class="btn btn-primary" target="_blank">Ver PDF</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Detalles de la Versión</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Información de la Modificación</h6>
+                        <p><strong>Fecha:</strong> {{ version.fecha_modificacion|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Médico:</strong> Dr. {{ version.medico_modificacion.nombre_completo }}</p>
+                        <p><strong>Motivo:</strong> {{ version.motivo_modificacion }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Contenido del Informe</h6>
+                        <div class="border p-3 bg-light">
+                            {{ version.contenido|linebreaks }}
+                        </div>
+                    </div>
+
+                    {% if version.variables_utilizadas %}
+                    <div class="mb-4">
+                        <h6>Variables Utilizadas</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for key, value in version.variables_utilizadas.items %}
+                                    <tr>
+                                        <td>{{ key }}</td>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Historial de Versiones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for v in informe.versiones.all %}
+                        <a href="{% url 'informes:ver_version_informe' v.id %}" 
+                           class="list-group-item list-group-item-action {% if v.id == version.id %}active{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Versión {{ v.version }}</h6>
+                                <small>{{ v.fecha_modificacion|date:"d/m/Y" }}</small>
+                            </div>
+                            <small>Dr. {{ v.medico_modificacion.nombre_completo }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% if version.version > 1 %}
+            <div class="card mt-3">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Comparar con Versión Anterior</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formCompararAnterior">
+                        {% csrf_token %}
+                        <input type="hidden" name="version1" value="{{ version.id }}">
+                        <input type="hidden" name="version2" value="{{ version.version|add:"-1" }}">
+                        <button type="submit" class="btn btn-warning btn-sm">Comparar con V{{ version.version|add:"-1" }}</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mostrar comparación -->
+<div class="modal fade" id="modalComparacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Comparación de Versiones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="comparisonTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="contenido-tab" data-bs-toggle="tab" 
+                                data-bs-target="#contenido" type="button" role="tab">
+                            Contenido
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="variables-tab" data-bs-toggle="tab" 
+                                data-bs-target="#variables" type="button" role="tab">
+                            Variables
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" 
+                                data-bs-target="#metadata" type="button" role="tab">
+                            Metadata
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content mt-3" id="comparisonTabContent">
+                    <div class="tab-pane fade show active" id="contenido" role="tabpanel">
+                        <div class="diff-view" id="contenidoDiff"></div>
+                    </div>
+                    <div class="tab-pane fade" id="variables" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="variablesDiff">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Estado</th>
+                                        <th>Valor Anterior</th>
+                                        <th>Valor Nuevo</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="metadata" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="metadataDiff"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function formatDiffLine(line) {
+    if (line.startsWith('+')) {
+        return `<div class="diff-line diff-added">${line}</div>`;
+    } else if (line.startsWith('-')) {
+        return `<div class="diff-line diff-removed">${line}</div>`;
+    } else {
+        return `<div class="diff-line diff-unchanged">${line}</div>`;
+    }
+}
+
+function mostrarDiferencias(data) {
+    // Contenido
+    const contenidoDiff = document.getElementById('contenidoDiff');
+    if (data.diferencias.contenido.tiene_cambios) {
+        contenidoDiff.innerHTML = data.diferencias.contenido.diff
+            .map(line => formatDiffLine(line))
+            .join('');
+    } else {
+        contenidoDiff.innerHTML = '<p class="text-muted">No hay cambios en el contenido</p>';
+    }
+
+    // Variables
+    const variablesBody = document.querySelector('#variablesDiff tbody');
+    variablesBody.innerHTML = '';
+    if (data.diferencias.variables.tiene_cambios) {
+        Object.entries(data.diferencias.variables.diff).forEach(([key, info]) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${key}</td>
+                <td><span class="badge ${getBadgeClass(info.tipo)}">${info.tipo}</span></td>
+                <td>${info.tipo === 'agregado' ? '-' : info.valor_anterior || info.valor}</td>
+                <td>${info.tipo === 'eliminado' ? '-' : info.valor_nuevo || info.valor}</td>
+            `;
+            variablesBody.appendChild(row);
+        });
+    } else {
+        variablesBody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay cambios en las variables</td></tr>';
+    }
+
+    // Metadata
+    const metadataTable = document.getElementById('metadataDiff');
+    metadataTable.innerHTML = `
+        <tr>
+            <th></th>
+            <th>Versión Original</th>
+            <th>Versión Modificada</th>
+        </tr>
+        <tr>
+            <td><strong>Fecha</strong></td>
+            <td>${data.diferencias.fecha_modificacion.v1}</td>
+            <td>${data.diferencias.fecha_modificacion.v2}</td>
+        </tr>
+        <tr>
+            <td><strong>Médico</strong></td>
+            <td>Dr. ${data.diferencias.medico_modificacion.v1}</td>
+            <td>Dr. ${data.diferencias.medico_modificacion.v2}</td>
+        </tr>
+        <tr>
+            <td><strong>Motivo</strong></td>
+            <td>${data.diferencias.motivo.v1}</td>
+            <td>${data.diferencias.motivo.v2}</td>
+        </tr>
+    `;
+
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalComparacion'));
+    modal.show();
+}
+
+function getBadgeClass(tipo) {
+    switch (tipo) {
+        case 'agregado':
+            return 'bg-success';
+        case 'eliminado':
+            return 'bg-danger';
+        case 'modificado':
+            return 'bg-warning text-dark';
+        default:
+            return 'bg-secondary';
+    }
+}
+
+document.getElementById('formCompararAnterior')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch('{% url "informes:comparar_versiones" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+        mostrarDiferencias(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al comparar versiones');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

@@ -1,0 +1,124 @@
+/* Estilos base para el PDF */
+@page {
+    margin: 3cm 2cm;
+    @top-center {
+        content: "Registro de Firmas Digitales";
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        color: #666;
+    }
+    @bottom-center {
+        content: "Página " counter(page) " de " counter(pages);
+        font-size: 9pt;
+        color: #666;
+    }
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #333;
+}
+
+/* Encabezado */
+.pdf-header {
+    text-align: center;
+    margin-bottom: 2cm;
+}
+
+.pdf-header h1 {
+    color: #2c3e50;
+    font-size: 24pt;
+    margin-bottom: 0.5cm;
+}
+
+.metadata {
+    font-size: 10pt;
+    color: #666;
+}
+
+/* Tablas de información */
+.info-table, .firmas-table, .versiones-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1cm 0;
+}
+
+.info-table th,
+.firmas-table th,
+.versiones-table th {
+    background-color: #f8f9fa;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #dee2e6;
+    font-weight: bold;
+}
+
+.info-table td,
+.firmas-table td,
+.versiones-table td {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+}
+
+/* Secciones */
+section {
+    margin-bottom: 1.5cm;
+}
+
+h2 {
+    color: #2c3e50;
+    font-size: 14pt;
+    margin-bottom: 0.5cm;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.2cm;
+}
+
+/* Firmas y Versiones */
+.firmas-table tr:nth-child(even),
+.versiones-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Pie de página */
+.pdf-footer {
+    position: running(footer);
+    font-size: 9pt;
+    color: #666;
+    text-align: center;
+}
+
+.footer-content {
+    border-top: 1px solid #dee2e6;
+    padding-top: 0.5cm;
+}
+
+/* Utilidades */
+.text-muted {
+    color: #6c757d;
+}
+
+.small {
+    font-size: 9pt;
+}
+
+/* Estilos específicos para impresión */
+@media print {
+    .page-break {
+        page-break-before: always;
+    }
+    
+    section {
+        page-break-inside: avoid;
+    }
+    
+    table {
+        page-break-inside: auto;
+    }
+    
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+} 

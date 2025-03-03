@@ -1,0 +1,272 @@
+/* Estilos para firmas digitales */
+.firma-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.firma-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.firma-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.firma-imagen {
+    max-width: 100px;
+    height: auto;
+    border-radius: 4px;
+}
+
+.firma-metadata {
+    flex: 1;
+}
+
+.firma-metadata p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+.firma-sello {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #28a745;
+    font-size: 0.9em;
+    padding: 5px 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.firma-sello.invalida {
+    color: #dc3545;
+}
+
+/* Estilos para el formulario de firma */
+#formFirma {
+    max-width: 100%;
+}
+
+#formFirma .form-control {
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+}
+
+#formFirma .form-check-label {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+/* Estilos para la verificación */
+.verificacion-header {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.verificacion-header h6 {
+    margin-bottom: 10px;
+}
+
+/* Animaciones */
+@keyframes selloAparece {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.firma-sello {
+    animation: selloAparece 0.3s ease-out;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .firma-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .firma-imagen {
+        margin: 0 auto;
+    }
+    
+    .firma-metadata {
+        text-align: center;
+    }
+}
+
+/* Estilos para el modal de verificación */
+#modalVerificacion .table {
+    font-size: 0.9em;
+}
+
+#modalVerificacion .badge {
+    font-size: 0.8em;
+    padding: 5px 8px;
+}
+
+/* Estilos para el historial de versiones */
+.list-group-item {
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item small {
+    color: #6c757d;
+}
+
+/* Estilos para los botones de acción */
+.btn-group .btn {
+    margin-left: 5px;
+}
+
+.btn-outline-primary:hover {
+    box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+}
+
+.btn-outline-secondary:hover {
+    box-shadow: 0 2px 4px rgba(108,117,125,0.2);
+}
+
+/* Estilos para firmas digitales */
+.firma-imagen {
+    max-height: 60px;
+    border: 1px solid #dee2e6;
+    padding: 5px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+.firma-container {
+    position: relative;
+    margin: 10px 0;
+}
+
+.firma-sello {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 80px;
+    height: 80px;
+    opacity: 0.8;
+}
+
+.firma-metadata {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Estilos para el formulario de firma */
+.pin-input {
+    letter-spacing: 0.5em;
+    text-align: center;
+    font-family: monospace;
+}
+
+.firma-preview {
+    border: 2px dashed #dee2e6;
+    padding: 20px;
+    margin: 10px 0;
+    text-align: center;
+    min-height: 100px;
+}
+
+/* Badges de estado de firma */
+.badge-firmado {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-pendiente {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-rechazado {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Animaciones */
+.firma-animation {
+    transition: all 0.3s ease;
+}
+
+.firma-animation:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Estilos para el sello de tiempo */
+.timestamp {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+/* Estilos para verificación */
+.verificacion-container {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+}
+
+.verificacion-item {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.verificacion-icon {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+.verificacion-success {
+    color: #28a745;
+}
+
+.verificacion-warning {
+    color: #ffc107;
+}
+
+.verificacion-error {
+    color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .firma-imagen {
+        max-height: 40px;
+    }
+    
+    .firma-sello {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .verificacion-container {
+        padding: 10px;
+    }
+} 

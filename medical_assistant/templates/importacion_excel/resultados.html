@@ -1,0 +1,148 @@
+{% extends "importacion_excel/base.html" %}
+{% load importacion_tags %}
+
+{% block importacion_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Resultados de la Importación</h5>
+                <div>
+                    <a href="{% url 'importacion_excel:importar_excel' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-plus"></i> Nueva Importación
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Resumen de la importación -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Detalles de la Importación</h6>
+                        <dl class="row">
+                            <dt class="col-sm-4">ID</dt>
+                            <dd class="col-sm-8">{{ importacion.id }}</dd>
+                            
+                            <dt class="col-sm-4">Tipo</dt>
+                            <dd class="col-sm-8">{{ importacion.get_tipo_importacion_display }}</dd>
+                            
+                            <dt class="col-sm-4">Estado</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge {% if importacion.estado == 'IMPORTADO' %}bg-success{% elif importacion.estado == 'ERROR' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ importacion.get_estado_display }}
+                                </span>
+                            </dd>
+                            
+                            <dt class="col-sm-4">Subido</dt>
+                            <dd class="col-sm-8">{{ importacion.fecha_subida|date:"d/m/Y H:i" }}</dd>
+                        </dl>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Estadísticas</h6>
+                        <dl class="row">
+                            <dt class="col-sm-6">Total Registros</dt>
+                            <dd class="col-sm-6">{{ estadisticas.total }}</dd>
+                            
+                            <dt class="col-sm-6">Procesados</dt>
+                            <dd class="col-sm-6">{{ estadisticas.procesados }}</dd>
+                            
+                            <dt class="col-sm-6">Con Errores</dt>
+                            <dd class="col-sm-6">{{ estadisticas.con_error }}</dd>
+                            
+                            <dt class="col-sm-6">Tasa de Éxito</dt>
+                            <dd class="col-sm-6">
+                            {% with tasa_exito=estadisticas.tasa_exito %}
+                                {% if tasa_exito >= 90 %}
+                                    {% with clase_progreso="bg-success" %}
+                                {% elif tasa_exito >= 70 %}
+                                    {% with clase_progreso="bg-warning" %}
+                                {% else %}
+                                    {% with clase_progreso="bg-danger" %}
+                                {% endif %}
+                                <div class="progress-bar {{ clase_progreso }}" 
+                                    role="progressbar" 
+                                    style="--progress-width: {{ tasa_exito }}%; width: var(--progress-width);"
+                                    aria-valuenow="{{ estadisticas.tasa_exito }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    {{ estadisticas.tasa_exito }}%
+                                </div>
+                                {% endwith %}
+                            {% endwith %}
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Gráfico de resultados -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="resultadosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Sidebar con reglas aplicadas -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Reglas Aplicadas</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for regla in reglas_aplicadas %}
+                    <li class="list-group-item">
+                        <h6 class="mb-1">{{ regla.campo }}</h6>
+                        <p class="mb-1 small">{{ regla.descripcion }}</p>
+                        <small class="text-muted">Aplicada {{ regla.veces }} veces</small>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">
+                        No se aplicaron reglas de corrección
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{{ estadisticas|json_script:"estadisticas-data" }}  <!-- Nueva línea -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('resultadosChart').getContext('2d');
+    if (ctx) {
+        // Obtener datos desde json_script
+        const estadisticas = JSON.parse(document.getElementById('estadisticas-data').textContent);
+        var exitosos = estadisticas.procesados - estadisticas.con_error;
+        var errores = estadisticas.con_error;
+        
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Exitosos', 'Con Errores'],
+                datasets: [{
+                    data: [exitosos, errores],
+                    backgroundColor: ['#10B981', '#EF4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% endblock %} 

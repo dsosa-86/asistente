@@ -1,0 +1,4 @@
+# Django REST Framework
+djangorestframework>=3.14.0
+django-filter>=23.5
+markdown>=3.5.1 

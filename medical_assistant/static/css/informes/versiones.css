@@ -1,0 +1,111 @@
+/* Estilos para la comparación de versiones */
+.diff-view {
+    font-family: monospace;
+    white-space: pre-wrap;
+    margin: 1rem 0;
+}
+
+.diff-line {
+    padding: 2px 5px;
+    margin: 2px 0;
+}
+
+.diff-added {
+    background-color: #e6ffe6;
+    border-left: 3px solid #28a745;
+}
+
+.diff-removed {
+    background-color: #ffe6e6;
+    border-left: 3px solid #dc3545;
+}
+
+.diff-unchanged {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+}
+
+/* Estilos para el historial de versiones */
+.version-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.version-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.version-item {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.version-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    transform: translateY(-50%);
+}
+
+.version-item.active::before {
+    background-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+/* Estilos para el modal de comparación */
+.comparison-table th {
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.comparison-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.variable-diff {
+    background-color: #fff3cd;
+    padding: 0.25rem;
+    border-radius: 3px;
+}
+
+/* Estilos para las badges de estado */
+.version-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+}
+
+.version-current {
+    background-color: #28a745;
+    color: white;
+}
+
+.version-previous {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .comparison-table {
+        font-size: 0.875rem;
+    }
+    
+    .diff-view {
+        font-size: 0.875rem;
+    }
+} 

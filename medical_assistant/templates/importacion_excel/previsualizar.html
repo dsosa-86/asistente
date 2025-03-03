@@ -1,0 +1,152 @@
+{% extends "importacion_excel/base.html" %}
+
+{% block importacion_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Previsualización de Datos</h5>
+        <div>
+            <a href="{% url 'importacion_excel:importar_excel' %}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <form method="post" action="{% url 'importacion_excel:revisar_excel' %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="importacion_id" value="{{ importacion.id }}">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-check"></i> Confirmar Importación
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <!-- Información de la importación -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6>Detalles del Archivo</h6>
+                <dl class="row">
+                    <dt class="col-sm-4">Tipo de Importación</dt>
+                    <dd class="col-sm-8">{{ importacion.get_tipo_importacion_display }}</dd>
+                    
+                    <dt class="col-sm-4">Total Registros</dt>
+                    <dd class="col-sm-8">{{ total_registros }}</dd>
+                    
+                    <dt class="col-sm-4">Columnas</dt>
+                    <dd class="col-sm-8">{{ columnas|length }}</dd>
+                </dl>
+            </div>
+            <div class="col-md-6">
+                <h6>Validación Inicial</h6>
+                <dl class="row">
+                    <dt class="col-sm-4">Errores</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-danger">{{ errores|length }}</span>
+                    </dd>
+                    
+                    <dt class="col-sm-4">Advertencias</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-warning text-dark">{{ advertencias|length }}</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        
+        <!-- Errores y Advertencias -->
+        {% if errores or advertencias %}
+        <div class="row mb-4">
+            {% if errores %}
+            <div class="col-md-6">
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">Errores Encontrados</h6>
+                    <ul class="mb-0">
+                        {% for error in errores %}
+                        <li>{{ error.mensaje }} (Fila {{ error.fila }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if advertencias %}
+            <div class="col-md-6">
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">Advertencias</h6>
+                    <ul class="mb-0">
+                        {% for advertencia in advertencias %}
+                        <li>{{ advertencia.mensaje }} (Fila {{ advertencia.fila }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <!-- Tabla de previsualización -->
+        <h6>Previsualización de Datos</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        {% for columna in columnas %}
+                        <th>{{ columna }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in muestra_datos %}
+                    <tr class="{% if dato.tiene_error %}error-row{% elif dato.tiene_advertencia %}warning-row{% endif %}">
+                        <td>{{ forloop.counter }}</td>
+                        {% for columna in columnas %}
+                        <td>{{ dato|get_item:columna|default:"-" }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i> 
+            Se muestran los primeros 10 registros. La importación procesará {{ total_registros }} registros en total.
+        </div>
+    </div>
+    
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <small class="text-muted">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Revise cuidadosamente los datos antes de confirmar la importación
+                </small>
+            </div>
+            <form method="post" action="{% url 'importacion_excel:revisar_excel' %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="importacion_id" value="{{ importacion.id }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check"></i> Confirmar Importación
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Marcar filas con errores al pasar el mouse
+    const filas = document.querySelectorAll('tr[class*="error-row"], tr[class*="warning-row"]');
+    filas.forEach(fila => {
+        fila.setAttribute('data-bs-toggle', 'tooltip');
+        fila.setAttribute('data-bs-placement', 'left');
+        if (fila.classList.contains('error-row')) {
+            fila.setAttribute('title', 'Esta fila contiene errores');
+        } else {
+            fila.setAttribute('title', 'Esta fila contiene advertencias');
+        }
+    });
+});
+</script>
+{% endblock %} 

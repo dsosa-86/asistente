@@ -1,0 +1,160 @@
+/* Estilos para componentes de retroalimentación */
+
+/* Contenedor principal de sugerencias */
+.suggestion-box {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.suggestion-box:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.suggestion-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Elementos de sugerencia */
+.suggestion-item {
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+.suggestion-text {
+    color: #212529;
+    font-size: 0.9rem;
+}
+
+.suggestion-actions {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.suggestion-item:hover .suggestion-actions {
+    opacity: 1;
+}
+
+/* Barra de progreso */
+.validation-progress {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 6px;
+}
+
+.progress {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.progress-stats {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+/* Historial de correcciones */
+.correction-history {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.correction-history-title {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    padding: 0.5rem 0;
+    margin: 0;
+    z-index: 1;
+}
+
+.correction-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    transition: background-color 0.2s ease;
+}
+
+.correction-item:hover {
+    background-color: #f8f9fa;
+}
+
+.correction-header {
+    margin-bottom: 0.5rem;
+}
+
+.correction-field {
+    font-weight: 600;
+    color: #495057;
+}
+
+.correction-date {
+    color: #6c757d;
+}
+
+.correction-values {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.original-value {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.corrected-value {
+    font-weight: 500;
+}
+
+.correction-reason {
+    display: block;
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* Alertas personalizadas */
+.alert {
+    border-left-width: 4px;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert, .suggestion-box, .correction-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .correction-values {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .progress-bar {
+        font-size: 0.75rem;
+    }
+} 

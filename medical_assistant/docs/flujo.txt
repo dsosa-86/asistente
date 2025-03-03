@@ -1,0 +1,129 @@
+Ten  en cuanta que el projecto es para solucionar los problemas
+de un asistente medico que trabaja para un doctor en particular,
+y estamos tratando de excalar el projecto a centros medicos, varios medicos, etc.
+por lo que si tienes mejoras y cosas que se me hayan pasado por alto puedes
+aclararlas o agregarlas como mejoras, acorde a tu opinion profesional.
+1 - Flujo administrativo
+un asistente medico es un administrativo, que puede trabajar
+para un medico o para un medico en particular.
+se puede dar el caso en el que el mismo medico decida autogestionarse.
+si un asistente es parte de un centro medico, va a gestionar los Turnos
+de todos los medicos que trabajen en ese centro medico. 
+si es asistente de un medico en particular, entonces va a gestionar
+los turnos de ese medico en particular.
+Los medicos pueden prestar servicio en uno o varios centros medicos.
+los medicos prestan servicios a algunas obras sociales y hay otras que no.
+los centros medicos pretan servicios a algunas obras sociales y a otras no.
+El doctor X, hace ciertas cirugias ( A, B, C por ejemplo).
+El centro medico D, solo hace cirugias A, B por ejemplo.
+El centro medico E hace las cirugias A,B,C por ejemplo.
+tambien estan los casos de practicas privadas, que pueden ser
+un "centro medico mas".
+la operacion: 
+    tiene un protocolo pre operatorio (examenes pre quirúrgicos)
+    para la cirugia A que puede ser distinto al de B. 
+    al igual que los protocolos post operatorios.
+
+un paciente P, solicita un turno para ver al medico Dr. X.
+acorde a la obra social, plan se decide en que centro medico 
+sera el turno y si no lo cubre tiene la posibilidad de que sea 
+por practica privada. 
+el asistente revisa la agenda y asigna el turno para consulta (u operacion) 
+conulsta : el medico revisa la paciente, solicita (si es necesario) Los
+pre operatorios necesarios y le pide al paicente que solicite un 
+turno para la cirugia una vez tenga los pre operatorios listos.
+los pre operatorios pueden ser echos en el mismo centro u en otro 
+lugar que el paciente decida, en este ultimo caso deberia enviar los
+examente pre operatorios antes del turno para que se agregen al historial
+del paciente y que esten para ser vistos/analizados por el medico antes de
+la operacion.
+con los examente pre operatorio listos y el turno solicitado para la cirugia
+se procede a asiganar el turno, en el mismo se asigna el anestesista E
+instrumentador, el medico que hace la cirugia (normalmente sera el mismo
+que hice la consulta, pero puede ser que sean distintos.) 
+En caso de que  haga falta se solicita si  hay que alguilar algun 
+equipamiento extra, medicamentos, instrumentos o cualquier cosa que 
+pueda falta (esto es mas bien para los casos de practica privada)
+cirugia : se procede con la cirugia (operacion) y se generan los 
+informes post operatorios. 
+
+2 - Flujo de Pacientes
+se pueden dar principalmente dos tipos de flujos.
+- el paciente solicita un turno para ver al doctor X.
+    y aca vemos si es consulta u operacion el turno.
+- O el centro medico ( D por ejemplo), solicita a los medicos que estan 
+de servicio que vea al paciente X. en estos casos por lo general son
+consultas de personas que han sido operadas y se hacen los seguimientos.
+un paciente tambien puede ser derivado por otro medico o en el segundo 
+caso derivado por un centro medico. (esto es importante por la facturacion
+y honorarios a pagar/cobrar tema que todavia no  se ha abordado en el
+projecto, pero sera un tema importante a agregar una vez que tengamos
+el MVP)
+3 - Flujo medico
+los mediccos prestan servicios en ciertos centros medicos (  o su 
+practica privada)
+durante las consultas se hace el diagnostic y se carga en la historia 
+clinica del paciente. 
+se pueden hacer derivaciones para que el paciente se atienda 
+en el centro medico tal o que vea a otro medico.
+4 - Flujo de Operaciones
+se le solicita al paciente que haga ciertos examanes prequirurgicos
+el responsabilidad del paciente hacerlos y enviar (o avisar al adminstrativo)
+que estan echos y que envie los resultados. En el caso de que se hagan en el 
+mismo centro medico se deberian poder obtener de ahi.
+
+Obras Sociales : cada obra social tiene una cobertura basica y dependiendo
+del plan pueden cubir mas o menos. esto aplica para medicamentos, honorarios
+del doctos y cobertura de la operacion (costos "estructurales" quirofano, etc)
+Turnos : las consultas suelen ser rapidas 15 a 30 minutos como maximo. 
+no esta planteado los casos de urgencias o  prioritarios por le momento.
+pero se podrian implementar en caso de centros medicos que se asignen a los
+medicos "de turno" y que el primero que esta libre que lo tome (o avise que 
+lo toma al administrativo para que gestione)
+en caso de los asistntes medicos (de un doctor en particular), como 
+tiene accceso a la agenda y al doctor (en persona) podrian agregar "sobre 
+turnos" o un turno entre otros dos que ya estan para cubir las emergencias o 
+casos prioritarios.
+sobre centros medicos: 
+ - cierto equipamiento pertenece a un quirofano en particular y solo ahi.
+ - el equipamiento que se puede alquilar si maneja externamente (fuera de esta
+ app) y se asigna a la operacion en question. esto es solamente util Para
+ la finalidad de costos y facturacion. 
+ - si hay quirofanos especificos para ciertas operaciones y hay Algunos
+ que son multiproposito (es decir sirve para varios tipos de cirugias)
+ sobre facturacion : cuando hay derivaciones los honorarios se
+ manejan por fuera de la aplicacion, es decir el que "cobra" es el que
+ hace la cirugia, y por fuera de la aplicacion resuelven entre ellos..
+ al menos por el momento se maneja asi..
+ las diferentes obras sociales cubren cierta parte (o toda) la cirugia
+ y otras veces cubren la cirugia pero no los honorarios (a veces al revez)
+ en cuanto a los honorarios privados, se pueden dividir en dos:
+ costos fijos : costo de equipamiento, quirofano, instrumentador, anestesista, etc,
+ costo variable : honorarios del medico, ya que  puede decir hacer un 
+descuento al paciente x. 
+
+
+
+
+
+
+Ahora podemos continuar con el desarrollo. Basado en el estado actual, sugiero que nos enfoquemos en:
+Implementar las vistas y templates para:
+Gestión de estudios prequirúrgicos
+Importación de datos
+Dashboard de pacientes
+    Para continuar con el dashboard de pacientes, deberíamos:
+    Crear las vistas necesarias para mostrar la información del paciente
+    Implementar los templates correspondientes
+    Configurar las URLs
+    Agregar las funcionalidades específicas como:
+    Resumen de historia clínica
+    Estudios prequirúrgicos pendientes
+    Próximas citas
+    Estado de importaciones de datos
+
+Desarrollar la API REST para:
+Operaciones CRUD de pacientes
+Gestión de estudios
+Importación de datos
+¿Por cuál de estos aspectos prefieres que empecemos?

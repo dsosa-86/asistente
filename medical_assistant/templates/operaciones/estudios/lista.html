@@ -1,0 +1,129 @@
+{% extends "operaciones/estudios/base.html" %}
+
+{% block estudios_content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Estudios Prequirúrgicos</h5>
+        {% if perms.operaciones.add_estudioprequirurgico %}
+        <a href="{% url 'operaciones:crear_estudio' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Nuevo Estudio
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Cirugía</th>
+                        <th>Obligatorio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for estudio in estudios %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'operaciones:detalle_estudio' pk=estudio.pk %}"
+                               class="text-decoration-none">
+                                {{ estudio.nombre }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ estudio.get_tipo_display }}</span>
+                        </td>
+                        <td>{{ estudio.tipo_cirugia }}</td>
+                        <td>
+                            {% if estudio.es_obligatorio %}
+                            <span class="badge bg-danger">Obligatorio</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Opcional</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'operaciones:detalle_estudio' pk=estudio.pk %}"
+                                   class="btn btn-sm btn-info"
+                                   data-bs-toggle="tooltip"
+                                   title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if perms.operaciones.change_estudioprequirurgico %}
+                                <a href="{% url 'operaciones:editar_estudio' pk=estudio.pk %}"
+                                   class="btn btn-sm btn-warning"
+                                   data-bs-toggle="tooltip"
+                                   title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                {% if perms.operaciones.delete_estudioprequirurgico %}
+                                <a href="{% url 'operaciones:eliminar_estudio' pk=estudio.pk %}"
+                                   class="btn btn-sm btn-danger"
+                                   data-bs-toggle="tooltip"
+                                   title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            No hay estudios prequirúrgicos registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if estudios.has_other_pages %}
+        <nav aria-label="Paginación de estudios">
+            <ul class="pagination justify-content-center">
+                {% if estudios.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ estudios.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if tipo_cirugia %}&tipo_cirugia={{ tipo_cirugia }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Anterior</span>
+                </li>
+                {% endif %}
+                
+                {% for num in estudios.paginator.page_range %}
+                {% if estudios.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if tipo_cirugia %}&tipo_cirugia={{ tipo_cirugia }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if estudios.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ estudios.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if tipo %}&tipo={{ tipo }}{% endif %}{% if tipo_cirugia %}&tipo_cirugia={{ tipo_cirugia }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Siguiente</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

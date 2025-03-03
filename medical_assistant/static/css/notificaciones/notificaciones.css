@@ -1,0 +1,130 @@
+/* Estilos para la lista de notificaciones */
+.list-group-item {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.list-group-item:hover {
+    transform: translateX(5px);
+    background-color: #f8f9fa;
+}
+
+.list-group-item.unread {
+    border-left-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.list-group-item h5 {
+    color: #2c3e50;
+}
+
+.list-group-item i {
+    margin-right: 8px;
+}
+
+.list-group-item small {
+    font-size: 0.85rem;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    margin-right: 5px;
+}
+
+/* Animaciones para notificaciones nuevas */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notification-new {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Estilos para la configuración */
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.form-switch .form-check-input {
+    width: 3em;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Estilos para los iconos */
+.fa-envelope {
+    color: #007bff;
+}
+
+.fa-sms {
+    color: #28a745;
+}
+
+.fa-bell {
+    color: #ffc107;
+}
+
+/* Estilos para los botones */
+.btn-group .btn {
+    margin-left: 5px;
+}
+
+.btn-outline-primary:hover {
+    box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+}
+
+.btn-outline-secondary:hover {
+    box-shadow: 0 2px 4px rgba(108,117,125,0.2);
+}
+
+/* Estilos para la paginación */
+.pagination {
+    margin-top: 2rem;
+}
+
+.page-link {
+    color: #2c3e50;
+    border-radius: 0;
+}
+
+.page-item.active .page-link {
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .list-group-item {
+        padding: 0.75rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin: 5px 0;
+        width: 100%;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 4px 6px;
+    }
+} 

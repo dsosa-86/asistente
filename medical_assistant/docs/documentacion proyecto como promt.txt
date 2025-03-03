@@ -1,0 +1,368 @@
+# **Documentación del Proyecto: Asistente Médico**
+
+## **1. Introducción**
+### **Problema que resuelve el sistema**
+Actualmente, la gestión de turnos, pacientes, consultas y cirugías se maneja de forma manual con Excel, Word y PDF. Esto genera ineficiencias, errores en los registros y dificultades en el seguimiento de pacientes. 
+
+El sistema automatiza estos procesos, permitiendo:
+- Registro estructurado de pacientes.
+- Agendamiento y control de turnos (consultas y operaciones).
+- Generación automática de informes médicos y protocolos quirúrgicos.
+- Integración con obras sociales y centros médicos.
+- Control de acceso por roles (pacientes, doctores, administrativos).
+
+---
+## **2. Estructura de Archivos**
+### **Raíz del Proyecto**
+```
+asistente/
+├── medical_assistant/ 
+│   ├── apps/ 
+│   │   ├── centros_medicos/ 
+│   │   ├── consultas/ 
+│   │   ├── core/ 
+│   │   ├── importacion_excel/ 
+│   │   ├── informes/ 
+│   │   ├── obras_sociales/ 
+│   │   ├── operaciones/ 
+│   │   ├── pacientes/ 
+│   │   ├── turnos/
+│   │   └── usuarios/ 
+│   ├── docs/
+│   │   ├── documentacion_proyecto.md
+│   ├── media/
+│   ├── medical_assistant/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   ├── wsgi.py
+│   ├── requirements/
+│   ├── static/
+│   │   ├── css/ 
+│   │   ├── js/ 
+│   │   └── img/ 
+│   ├── templates/
+│   ├── manage.py
+venv/
+```
+
+### **Descripción de las Apps**
+| **App**              | **Funcionalidad** |
+|----------------------|------------------|
+| `pacientes`         | Gestión de pacientes (datos personales, obra social, historial). |
+| `turnos`            | Manejo de agendamiento de turnos para consultas y operaciones. |
+| `consultas`         | Registro de consultas médicas, diagnósticos y tratamientos. |
+| `operaciones`       | Administración de cirugías y protocolos quirúrgicos. |
+| `informes`          | Generación de informes en PDF sobre consultas y operaciones. |
+| `usuarios`          | Control de acceso y gestión de usuarios (pacientes, médicos, administrativos). Incluye gestión de relaciones administrativo-médico y administrativo-centro médico. |
+| `obras_sociales`    | Manejo de obras sociales y planes de cobertura. |
+| `centros_medicos`   | Administración de establecimientos médicos, consultorios y relaciones médico-centro médico. |
+| `importacion_excel` | Carga masiva de datos desde archivos Excel. |
+| `core`              | Configuraciones generales y utilidades compartidas. |
+| `insumos_medicos`   | Gestión de materiales y medicamentos quirúrgicos. |
+
+### **Modelos Principales**
+#### **Usuarios y Gestión**
+- `Usuario`: Modelo base extendido de AbstractUser con roles específicos
+- `Medico`: Información específica del médico (tipo, especialidad, matrícula)
+- `Administrativo`: Gestión de personal administrativo
+- `GestionAdministrativa`: Manejo de relaciones entre administrativos y médicos/centros médicos
+
+#### **Centros Médicos**
+- `CentroMedico`: Información básica del centro médico
+- `Consultorio`: Gestión de consultorios por centro médico
+- `HorarioAtencion`: Horarios disponibles por consultorio
+- `MedicoCentroMedico`: Relación entre médicos y centros médicos con horarios
+
+---
+## **3. Flujo de Trabajo**
+### **Gestión Administrativa**
+1. **Configuración Inicial**
+   - Creación de usuarios (médicos, administrativos)
+   - Asignación de roles y permisos
+   - Establecimiento de relaciones administrativo-médico o administrativo-centro médico
+
+2. **Gestión de Turnos**
+   - **Para administrativos de centro médico:**
+     - Acceso a agenda de todos los médicos del centro
+     - Gestión de turnos en cualquier consultorio del centro
+     - Control de horarios y disponibilidad
+   
+   - **Para administrativos de médico:**
+     - Acceso a agenda del médico en todos sus centros
+     - Gestión de turnos en los centros donde el médico atiende
+     - Control de horarios específicos del médico
+
+3. **El paciente solicita turno**
+   - Si no está en la base de datos, se crea un nuevo registro con datos básicos.
+   - Aún no tiene turno, doctor, centro médico ni detalles adicionales.
+4. **El administrativo asigna el turno.**
+   - Se agregan datos clave como el médico, centro médico y autorización de obra social.
+   - Se define si el turno es para consulta o cirugía.
+5. **El paciente asiste a la consulta.**
+   - El médico registra la atención y determina si requiere cirugía.
+   - Se asigna una operación si es necesario.
+6. **Si hay cirugía, se prepara el procedimiento.**
+   - Se genera el protocolo quirúrgico y se asigna instrumentador y anestesista.
+7. **El médico genera el informe postoperatorio.**
+   - Se genera automáticamente basado en el protocolo y datos preestablecidos
+   - El médico puede realizar ajustes y modificaciones post-generación
+   - Sistema de control de versiones para mantener historial de cambios
+   - Los cambios quedan registrados con fecha, hora y usuario que los realizó
+   - Se mantiene una copia del informe original y la versión modificada
+
+### **Gestión de Informes y Protocolos**
+1. **Generación del Informe**
+   - Creación inicial basada en plantilla
+   - Incorporación de datos del procedimiento
+   - Generación automática del PDF
+
+2. **Revisión y Edición**
+   - El médico revisa el informe generado
+   - Si requiere cambios:
+     - Accede a la interfaz de edición
+     - Realiza modificaciones necesarias
+     - Especifica el motivo del cambio
+     - Sistema crea nueva versión automáticamente
+
+3. **Control de Versiones**
+   - Cada modificación genera nueva versión
+   - Se mantiene historial completo
+   - Acceso a todas las versiones anteriores
+   - Capacidad de comparar versiones
+   
+4. **Visualización de Cambios**
+   - Interfaz visual para comparar versiones
+   - Tres niveles de comparación:
+     - Contenido: Diferencias línea por línea
+     - Variables: Cambios en valores
+     - Metadata: Información de modificación
+
+5. **Validación y Firma**
+   - Verificación de cambios
+   - Aprobación médica
+   - Firma digital (pendiente)
+   - Generación de PDF actualizado
+
+### **Validaciones y Controles**
+- Verificación automática de disponibilidad según horarios establecidos
+- Control de superposición de turnos
+- Validación de relaciones médico-centro médico activas
+- Control de permisos según tipo de gestión administrativa
+
+---
+## **4. Estado del Proyecto**
+✅ **Implementado:**
+- Modelos base creados y migrados
+- Sistema de roles y permisos
+- Gestión de relaciones administrativo-médico y administrativo-centro médico
+- Control de horarios por médico y centro médico
+- Validaciones de disponibilidad y superposición
+- Admin mejorado con filtros y búsquedas específicas
+- Importación desde Excel (funcional)
+- Sistema de gestión de protocolos quirúrgicos
+- Generación automática de documentos PDF
+- Sistema de edición post-generación de informes
+- Control de versiones en modificaciones de informes
+- Interfaz visual para comparación de versiones
+- Sistema de notificaciones básico implementado
+
+📌 **Próximos pasos:**
+- Implementar sistema de notificaciones avanzado (email/SMS)
+- Desarrollar dashboard para estadísticas
+- Implementar sistema de reportes personalizados
+- Optimizar el rendimiento de consultas complejas
+- Implementar cache para mejorar tiempos de respuesta
+- Agregar sistema de firmas digitales para informes modificados
+- Desarrollar vista de comparación entre versiones de informes
+
+---
+## **5. Tecnologías y Herramientas Utilizadas**
+### **Backend**
+- **Framework:** Django (Python)
+- **Base de Datos:** PostgreSQL
+- **Autenticación:** Django Auth con roles personalizados
+- **Generación de PDF:** ReportLab
+- **Cache:** Redis
+- **Tareas asíncronas:** Celery
+- **API REST:** Django Rest Framework
+- **Control de Versiones:** difflib para comparación de textos
+
+### **Frontend**
+- **Templates:** Django Templates
+- **CSS Framework:** Bootstrap 5
+- **JavaScript:** 
+  - Vue.js para componentes dinámicos
+  - Axios para llamadas API
+  - FullCalendar para gestión de calendario
+- **Diseño Responsivo:** Tailwind CSS
+- **Comparación Visual:** Sistema personalizado de diff
+
+---
+## **6. Funcionalidades Detalladas**
+### **Sistema de Versionado de Informes**
+1. **Control de Versiones**
+   - Registro automático de cada modificación
+   - Almacenamiento de contenido anterior
+   - Tracking de variables modificadas
+   - Historial completo de cambios
+
+2. **Interfaz de Edición**
+   - Editor de contenido intuitivo
+   - Campo obligatorio para motivo de modificación
+   - Previsualización de cambios
+   - Validación de permisos
+
+3. **Visualización de Diferencias**
+   - Comparación visual línea por línea
+   - Identificación de cambios con colores
+   - Tabla comparativa de variables
+   - Metadata de modificaciones
+
+4. **Características de Seguridad**
+   - Control de acceso basado en roles
+   - Registro de usuario modificador
+   - Timestamp de modificaciones
+   - Validación de permisos por médico
+
+5. **Gestión de PDF**
+   - Regeneración automática post-modificación
+   - Almacenamiento de versiones anteriores
+   - Acceso al historial de PDFs
+   - Comparación entre versiones
+
+---
+## **7. Pasos a Seguir**
+1. **Finalizar integración de importación de datos desde Excel**
+2. **Optimizar la interfaz de administración y formularios**
+3. **Agregar permisos detallados según roles (paciente, médico, administrativo)**
+4. **Implementar reportes y gráficos de uso**
+5. **Desplegar el sistema en un servidor en producción**
+6. **Futuro:** Permitir que los pacientes completen su información online
+
+---
+## **8. Proyección del Programa**
+✔ **Expansión para soportar múltiples clínicas y centros médicos**
+✔ **Sistema de gestión de horarios y disponibilidad**
+✔ **Control granular de permisos y accesos**
+✔ **Implementación de un módulo de facturación**
+✔ **Integración con sistemas de historias clínicas digitales**
+✔ **Notificaciones automáticas de turnos a pacientes y médicos**
+
+---
+## **9. Contacto y Mantenimiento**
+- **Responsable del Proyecto:** [Nombre o equipo]
+- **Repositorio de código:** [Enlace a GitHub o GitLab]
+- **Documentación interna:** [Enlace a wiki o Notion]
+
+Esta documentación está diseñada para ser utilizada como prompt en cualquier IA para dar contexto sobre el estado y la dirección del proyecto. 🚀
+
+### **Módulo de Importación Excel**
+#### **Funcionalidades Implementadas**
+
+1. **Previsualización de Excel (`previsualizar_excel`)**
+   - Lectura y validación de archivos Excel multi-hoja
+   - Procesamiento de registros con validaciones
+   - Detección de errores y advertencias
+   - Visualización en tablas HTML
+   - Almacenamiento temporal de errores en sesión
+
+2. **Descarga de Errores (`descargar_errores_excel`)**
+   - Exportación de errores a formato Excel
+   - Generación de archivo descargable con errores detectados
+
+3. **Revisión de Datos (`revisar_excel`)**
+   - Validación detallada de registros
+   - Detección de duplicados por DNI
+   - Manejo de errores y advertencias por hoja/fila
+   - Validación de registros individuales
+
+4. **Guardado de Correcciones (`guardar_correcciones`)**
+   - Procesamiento de datos corregidos
+   - Validación final antes del guardado
+   - Control de duplicados
+   - Manejo de errores y advertencias
+
+#### **Estado Actual**
+✅ **Implementado:**
+- Sistema completo de validación
+- Procesamiento de múltiples hojas
+- Detección de duplicados
+- Manejo de errores y advertencias
+- Exportación de errores
+
+📌 **Pendiente:**
+- Implementar guardado final en base de datos
+- Mejorar interfaz de usuario para correcciones
+- Agregar validaciones específicas por tipo de dato
+- Implementar sistema de logs para seguimiento
+
+---
+
+### **Estado Actual del Proyecto**
+
+#### Módulos Implementados:
+1. **Sistema de Importación de Excel**
+   - Carga y validación de archivos Excel
+   - Previsualización de datos
+   - Sistema de corrección y mapeo de datos
+   - Reglas de corrección automáticas
+   - Estadísticas interactivas con Chart.js
+   - Notificaciones y manejo de errores
+
+2. **Gestión de Usuarios**
+   - Roles: Paciente, Médico, Administrativo
+   - Permisos y autenticación
+   - Gestión administrativa para médicos y centros
+
+3. **Gestión de Pacientes**
+   - Datos personales y médicos
+   - Historial clínico
+   - Vinculación con obras sociales
+
+4. **Centros Médicos**
+   - Gestión de quirófanos y consultorios
+   - Equipamiento médico
+   - Convenios con obras sociales
+
+#### Mejoras Recientes:
+1. **Estadísticas Interactivas**
+   - Gráficos dinámicos con Chart.js
+   - Filtros por período y tipo de datos
+   - Indicadores de carga y animaciones
+   - Sistema de notificaciones toast
+   - Manejo de errores con reintentos automáticos
+
+2. **Sistema de Notificaciones**
+   - Notificaciones toast para feedback
+   - Diferentes tipos: success, error, warning, info
+   - Animaciones y transiciones suaves
+   - Sistema de cola para notificaciones
+
+#### Pendiente por Implementar:
+1. **Mejoras en Estadísticas**
+   - Exportación de datos filtrados
+   - Más tipos de visualizaciones
+   - Caché para optimizar rendimiento
+
+2. **Sistema de Notificaciones**
+   - Notificaciones en tiempo real
+   - Historial de notificaciones
+   - Preferencias de notificación por usuario
+
+3. **Tests Unitarios**
+   - Cobertura de pruebas para módulos críticos
+   - Tests de integración
+   - Tests de interfaz de usuario
+
+4. **Optimizaciones**
+   - Mejoras de rendimiento en consultas
+   - Implementación de caché
+   - Optimización de carga de assets
+
+### **Próximos Pasos**
+1. Implementar tests unitarios
+2. Mejorar el sistema de notificaciones
+3. Optimizar el rendimiento general
+4. Documentar API y endpoints
+

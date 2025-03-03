@@ -1,0 +1,96 @@
+{% extends "informes/base.html" %}
+
+{% block content %}
+<div class="protocolo-header">
+    <h1>{{ protocolo.tipo_guia }}</h1>
+    
+    <div class="info-paciente">
+        <p><strong>Sr/a:</strong> {{ paciente.apellido }}, {{ paciente.nombre }}</p>
+        <p><strong>{{ paciente.obra_social }}</strong> {{ paciente.numero_afiliacion }}</p>
+        <p><strong>Indica Dr/a:</strong> {{ medico.nombre_completo }}</p>
+        <p><strong>Fecha:</strong> {{ protocolo.informe.fecha_creacion|date:"d / m / Y" }}</p>
+    </div>
+</div>
+
+<div class="procedimiento">
+    <h2>Estudio: {{ componentes.first.tipo }}:</h2>
+    <p>Se efectuó {{ protocolo.tipo_guia }} como guía para la realización de 
+    {% for componente in componentes %}
+        {{ componente.descripcion }}{% if not forloop.last %} y {% endif %}
+    {% endfor %}
+    por {{ componentes.first.diagnostico }}.</p>
+</div>
+
+<div class="tecnica">
+    <h2>TÉCNICA:</h2>
+    <p>Paciente en decúbito ventral bajo {{ protocolo.tipo_anestesia }} 
+    {% if protocolo.anestesiologo %}
+    con globos oculares protegidos por DR{{ protocolo.anestesiologo.genero|yesno:"A.,." }} {{ protocolo.anestesiologo.nombre_completo }}, MN: {{ protocolo.anestesiologo.matricula }}
+    {% endif %}</p>
+
+    <p>{{ protocolo.tecnica_utilizada }}</p>
+
+    {% if protocolo.materiales.exists %}
+    <div class="materiales">
+        <h3>Materiales utilizados:</h3>
+        <ul>
+        {% for material in protocolo.materiales.all %}
+            <li>{{ material.material.nombre }} {% if material.especificaciones %}({{ material.especificaciones }}){% endif %}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if protocolo.procedimiento_especifico %}
+    <div class="parametros-rf">
+        <h3>Parámetros de Radiofrecuencia:</h3>
+        <ul>
+            <li>Temperatura: {{ protocolo.procedimiento_especifico.parametros_rf.temperatura }}</li>
+            <li>Tiempo: {{ protocolo.procedimiento_especifico.parametros_rf.tiempo }}</li>
+            <li>Impedancia: {{ protocolo.procedimiento_especifico.parametros_rf.impedancia }}</li>
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if protocolo.medicamentos.exists %}
+    <div class="medicamentos">
+        <h3>Medicamentos utilizados:</h3>
+        <ul>
+        {% for medicamento in protocolo.medicamentos.all %}
+            <li>{{ medicamento.medicamento.nombre }} - {{ medicamento.dosis }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<div class="resultados">
+    <p>{{ protocolo.complicaciones }}</p>
+    {% if protocolo.imagenes_adjuntas %}
+    <p>Se envían registros obtenidos antes y durante el procedimiento.</p>
+    {% endif %}
+</div>
+
+<div class="estado-paciente">
+    <p><strong>Estado general del paciente:</strong> {{ protocolo.get_estado_paciente_display }}</p>
+    <p><strong>Respuesta al procedimiento:</strong> {{ protocolo.get_respuesta_procedimiento_display }}</p>
+    <p><strong>Sala de recuperación:</strong> {{ protocolo.requiere_recuperacion|yesno:"SI,NO" }}</p>
+</div>
+
+<div class="indicaciones">
+    <p>{{ protocolo.indicaciones_postprocedimiento|upper }}</p>
+</div>
+
+<div class="firmas">
+    {% for firma in protocolo.firmas.all %}
+    <div class="firma">
+        {% if firma.firma_digital.firma_imagen %}
+        <img src="{{ firma.firma_digital.firma_imagen.url }}" alt="Firma {{ firma.medico.nombre_completo }}">
+        {% endif %}
+        <p>Dr. {{ firma.medico.nombre_completo }}</p>
+        <p>MN {{ firma.medico.matricula }}</p>
+        <p>{{ firma.medico.especialidad }}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

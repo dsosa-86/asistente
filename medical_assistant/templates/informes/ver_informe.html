@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/informes/firmas.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Información del Informe -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>{{ informe.plantilla.nombre }}</h3>
+                    <div class="btn-group">
+                        {% if informe.archivo_generado %}
+                        <a href="{{ informe.archivo_generado.url }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-file-pdf"></i> Ver PDF
+                        </a>
+                        {% endif %}
+                        {% if puede_editar %}
+                        <a href="{% url 'informes:editar_informe' informe.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Metadata del Informe -->
+                    <div class="informe-metadata mb-4">
+                        <p><strong>Paciente:</strong> {{ informe.paciente }}</p>
+                        <p><strong>Médico:</strong> {{ informe.medico }}</p>
+                        <p><strong>Fecha:</strong> {{ informe.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Estado:</strong> 
+                            <span class="badge {% if informe.estado == 'FIRMADO' %}bg-success{% elif informe.estado == 'BORRADOR' %}bg-warning{% else %}bg-info{% endif %}">
+                                {{ informe.get_estado_display }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <!-- Contenido del Informe -->
+                    <div class="informe-contenido">
+                        {{ informe.contenido|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Firmas y Verificación -->
+        <div class="col-md-4">
+            <!-- Sistema de Firma -->
+            {% if puede_firmar %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Firmar Informe</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'informes:firmar_informe' informe.id %}" id="formFirma">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="pin" class="form-label">PIN de Firma Digital</label>
+                            <input type="password" class="form-control" id="pin" name="pin" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="confirmarFirma" required>
+                            <label class="form-check-label" for="confirmarFirma">
+                                Confirmo que he revisado el contenido y acepto firmarlo digitalmente
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-signature"></i> Firmar
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Firmas Existentes -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Firmas</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="verificarIntegridad()">
+                        <i class="fas fa-shield-alt"></i> Verificar Integridad
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="firmasContainer">
+                        {% for firma in informe.firmas.all %}
+                        <div class="firma-item mb-3">
+                            <div class="firma-header">
+                                <img src="{{ firma.firma_digital.firma_imagen.url }}" alt="Firma {{ firma.medico }}" class="firma-imagen">
+                                <div class="firma-metadata">
+                                    <p class="mb-0"><strong>{{ firma.get_rol_display }}</strong></p>
+                                    <p class="mb-0">Dr. {{ firma.medico }}</p>
+                                    <small class="text-muted">{{ firma.fecha_firma|date:"d/m/Y H:i" }}</small>
+                                </div>
+                            </div>
+                            <div class="firma-sello" id="sello-{{ firma.id }}">
+                                <i class="fas fa-check-circle"></i> Firma Verificada
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial de Versiones -->
+            {% if informe.versiones.exists %}
+            <div class="card">
+                <div class="card-header">
+                    <h5>Historial de Versiones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for version in informe.versiones.all %}
+                        <a href="{% url 'informes:ver_version_informe' version.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">Versión {{ version.version }}</h6>
+                                <small>{{ version.fecha_modificacion|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            <p class="mb-1">{{ version.motivo_modificacion|truncatechars:100 }}</p>
+                            <small>Por: Dr. {{ version.medico_modificacion }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Verificación -->
+<div class="modal fade" id="modalVerificacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Verificación de Integridad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resultadoVerificacion">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function verificarIntegridad() {
+    fetch(`{% url 'informes:verificar_integridad' informe.id %}`)
+        .then(response => response.json())
+        .then(data => {
+            const modalBody = document.getElementById('resultadoVerificacion');
+            let html = `
+                <div class="verificacion-header mb-3">
+                    <h6>Estado del Informe: <span class="badge bg-${data.estado_informe === 'FIRMADO' ? 'success' : 'warning'}">${data.estado_informe}</span></h6>
+                    <p>Última modificación: ${new Date(data.ultima_modificacion).toLocaleString()}</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Médico</th>
+                                <th>Rol</th>
+                                <th>Versión</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            data.verificaciones.forEach(v => {
+                html += `
+                    <tr>
+                        <td>${v.medico}</td>
+                        <td>${v.rol}</td>
+                        <td>${v.version}</td>
+                        <td>${new Date(v.fecha).toLocaleString()}</td>
+                        <td>
+                            <span class="badge bg-${v.integridad ? 'success' : 'danger'}">
+                                ${v.integridad ? 'Válida' : 'Inválida'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            modalBody.innerHTML = html;
+            new bootstrap.Modal(document.getElementById('modalVerificacion')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al verificar la integridad de las firmas');
+        });
+}
+
+// Confirmar antes de firmar
+document.getElementById('formFirma')?.addEventListener('submit', function(e) {
+    if (!confirm('¿Estás seguro de que deseas firmar este informe? Esta acción no se puede deshacer.')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+{% load json_script %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/importacion_excel/revisar.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">
+                <i class="fas fa-edit"></i> Revisión y Corrección de Datos
+            </h1>
+        </div>
+    </div>
+
+    <!-- Panel de Filtros y Búsqueda -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Buscar en los datos...">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select id="filterSheet" class="form-select">
+                <option value="all">Todas las hojas</option>
+                {% for sheet in datos.keys %}
+                <option value="{{ sheet }}">{{ sheet }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Panel de Errores -->
+    {% if errores %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-circle"></i> Errores Detectados
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                    <div class="list-group">
+                        {% for error in errores %}
+                        <div class="list-group-item list-group-item-danger">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ error.tipo }}</h6>
+                                <small>Fila: {{ error.fila }} - Hoja: {{ error.hoja }}</small>
+                            </div>
+                            <p class="mb-1">{{ error.mensaje }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Formulario de Corrección -->
+    <form id="correccionForm" method="post" action="{% url 'importacion_excel:guardar_correcciones' %}">
+        {% csrf_token %}
+        
+        {% for sheet, registros in datos.items %}
+        <div class="card mb-4 sheet-section" data-sheet="{{ sheet }}">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table"></i> {{ sheet }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                {% if registros|length > 0 %}
+                                    {% for key in registros.0.keys %}
+                                    <th>{{ key }}</th>
+                                    {% endfor %}
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in registros %}
+                            <tr>
+                                {% for key, value in registro.items %}
+                                <td>
+                                    <div class="editable-cell">
+                                        <input type="text" 
+                                               class="form-control form-control-sm"
+                                               data-original="{{ value }}"
+                                               data-key="{{ key }}"
+                                               data-sheet="{{ sheet }}"
+                                               data-row="{{ forloop.parentloop.counter0 }}"
+                                               value="{{ value }}">
+                                        <div class="suggestions d-none"></div>
+                                        {% if value in errores_campo %}
+                                        <div class="invalid-feedback">
+                                            {{ errores_campo|get_item:value }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Campo oculto para datos JSON -->
+        <input type="hidden" id="excel_data_corregido" name="excel_data_corregido" value="">
+
+        <!-- Botones de Acción -->
+        <div class="row">
+            <div class="col">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Guardar Correcciones
+                </button>
+                <a href="{% url 'importacion_excel:importar_excel' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Modal de Vista Previa -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vista Previa de Cambios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Renderizar los datos como scripts JSON separados #}
+{{ datos|json_script:"datosIniciales" }}
+{{ sugerencias|json_script:"sugerencias" }}
+
+<script>
+    // Obtener los datos de los elementos script
+    const datosIniciales = JSON.parse(document.getElementById('datosIniciales').textContent);
+    const sugerencias = JSON.parse(document.getElementById('sugerencias').textContent);
+</script>
+{% endblock %} 
