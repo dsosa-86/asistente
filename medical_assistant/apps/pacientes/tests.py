@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import Paciente
 from apps.usuarios.models import Usuario
+from datetime import datetime
 
 class PacienteTests(TestCase):
     def setUp(self):
