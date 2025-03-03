@@ -42,6 +42,15 @@ Sistema de gestión integral para centros médicos, especializado en el seguimie
    - Mapeo de columnas
    - Seguimiento de importaciones
 
+7. **turnos/**
+   - Gestión de turnos de pacientes con médicos
+   - Estados de turnos (pendiente, confirmado, cancelado)
+
+8. **informes/**
+   - Plantillas de informes
+   - Generación y firma de informes
+   - Procedimientos y seguimiento post-procedimiento
+
 ### Modelos Clave
 
 #### Pacientes
@@ -52,6 +61,18 @@ class Paciente(models.Model):
     obra_social = ForeignKey(ObraSocial)
     estudios_prequirurgicos = RelatedManager(PrequirurgicoPaciente)
     # ... otros campos
+
+    def validar_dni(value):
+        # ...
+
+    def validar_telefono(value):
+        # ...
+
+    def calcular_edad(self):
+        # ...
+
+    def fecha_nacimiento_formateada(self):
+        # ...
 ```
 
 #### Operaciones
@@ -80,7 +101,57 @@ class ExcelImport(models.Model):
     usuario = ForeignKey(Usuario)
     # ... otros campos
 ```
+#### Turnos 
+``` Python
+class Turno(models.Model):
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
+    consultorio = models.ForeignKey(Consultorio, on_delete=models.CASCADE)
+    fecha_hora = models.DateTimeField()
+    estado = models.CharField(max_length=20, choices=[
+        ('pendiente', 'Pendiente'),
+        ('confirmado', 'Confirmado'),
+        ('cancelado', 'Cancelado'),
+    ])
+```
+#### Informes
+``` Python
+class PlantillaInforme(models.Model):
+    # ...
 
+class Informe(models.Model):
+    # ...
+
+class VariablePersonalizada(models.Model):
+    # ...
+
+class FirmaDigital(models.Model):
+    # ...
+
+class VersionInforme(models.Model):
+    # ...
+
+class FirmaInforme(models.Model):
+    # ...
+
+class ProtocoloProcedimiento(models.Model):
+    # ...
+
+class ComponenteProcedimiento(models.Model):
+    # ...
+
+class MaterialProcedimiento(models.Model):
+    # ...
+
+class MedicamentoProcedimiento(models.Model):
+    # ...
+
+class FirmaProtocolo(models.Model):
+    # ...
+
+class SeguimientoPostProcedimiento(models.Model):
+    # ...
+```
 ## Flujos Principales
 
 ### 1. Gestión de Pacientes
@@ -102,6 +173,17 @@ class ExcelImport(models.Model):
 3. Corrección de errores
 4. Confirmación y aplicación
 5. Registro de cambios
+
+### 4. Gestión de Turnos
+1. Registro de turno
+2. Confirmación de turno
+3. Cancelación de turno
+### 5. Generación de Informes
+1. Creación de plantilla de informe
+2. Generación de informe
+3. Firma digital de informe
+5. Seguimiento post-procedimiento
+
 
 ## Configuración del Proyecto
 
@@ -140,6 +222,21 @@ DATABASE_URL=postgres://user:pass@localhost/dbname
 - `POST /api/importar/`: Importar archivo Excel
 - `GET /api/importar/{id}/estado/`: Estado de importación
 - `POST /api/importar/{id}/corregir/`: Corregir datos
+
+### Turnos
+- `GET /api/turnos/`: Lista de turnos
+- `POST /api/turnos/`: Crear turno
+- `GET /api/turnos/{id}/`: Detalle de turno
+- `PUT /api/turnos/{id}/`: Actualizar turno
+- `DELETE /api/turnos/{id}/`: Eliminar turno
+
+### Informes
+- `GET /api/informes/`: Lista de informes
+- `POST /api/informes/`: Crear informe
+- `GET /api/informes/{id}/`: Detalle de informe
+- `PUT /api/informes/{id}/`: Actualizar informe
+- `DELETE /api/informes/{id}/`: Eliminar informe
+
 
 ## Seguridad
 
@@ -212,4 +309,4 @@ DATABASE_URL=postgres://user:pass@localhost/dbname
 ## Contacto
 - **Desarrollador Principal:** [Nombre]
 - **Email:** [Email]
-- **GitHub:** [Usuario] 
+- **GitHub:** [Usuario]

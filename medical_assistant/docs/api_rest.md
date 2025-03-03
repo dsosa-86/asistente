@@ -42,9 +42,9 @@ REST_FRAMEWORK = {
 #### Lista y Creación
 - **GET** `/api/pacientes/`
   - Lista todos los pacientes
-  - Soporta filtros: `dni`, `obra_social`
-  - Búsqueda por: `nombre`, `apellido`, `dni`
-  - Ordenamiento por: `apellido`, `nombre`, `fecha_nacimiento`
+  - Soporta filtros: `dni`, `obra_social`, `nombre`
+  - Búsqueda por: `nombre`, `apellido`
+  - Ordenamiento por: `fecha_registro`
 
 - **POST** `/api/pacientes/`
   - Crea un nuevo paciente
@@ -64,43 +64,109 @@ REST_FRAMEWORK = {
 - **DELETE** `/api/pacientes/{id}/`
   - Elimina el paciente
 
-#### Endpoints Adicionales
-- **GET** `/api/pacientes/{id}/estudios/`
-  - Lista todos los estudios prequirúrgicos del paciente
+### Operaciones
+- **GET** `/api/operaciones/`
+  - Lista todas las operaciones
+  - Soporta filtros: `paciente`, `tipo_cirugia`, `estado`
+  - Búsqueda por: `paciente__nombre`, `tipo_cirugia__nombre`
+  - Ordenamiento por: `fecha_programada`
 
-- **GET** `/api/pacientes/{id}/estadisticas/`
-  - Retorna estadísticas del paciente:
-    - Total de consultas
-    - Consultas del último año
-    - Total de operaciones
-    - Estudios pendientes
-    - Estudios por tipo
+- **POST** `/api/operaciones/programar/`
+  - Programa una nueva operación
+  - Requiere todos los campos obligatorios
+
+- **GET** `/api/operaciones/{id}/`
+  - Retorna detalles de la operación
+
+- **PUT** `/api/operaciones/{id}/`
+  - Actualiza todos los campos de la operación
+
+- **PATCH** `/api/operaciones/{id}/`
+  - Actualiza parcialmente los datos de la operación
+
+- **DELETE** `/api/operaciones/{id}/`
+  - Elimina la operación
 
 ### Estudios Prequirúrgicos
+- **GET** `/api/estudios/`
+  - Lista todos los estudios prequirúrgicos
+  - Soporta filtros: `tipo`, `nombre`
+  - Búsqueda por: `nombre`
+  - Ordenamiento por: `fecha_creacion`
 
-#### Lista y Creación
-- **GET** `/api/estudios-prequirurgicos/`
-  - Lista todos los estudios
-  - Filtros: `paciente`, `estado`, `estudio__tipo`
-  - Ordenamiento por: `fecha_solicitud`, `fecha_realizacion`
-
-- **POST** `/api/estudios-prequirurgicos/`
+- **POST** `/api/estudios/`
   - Crea un nuevo estudio prequirúrgico
+  - Requiere todos los campos obligatorios
 
-#### Operaciones por ID
-- **GET** `/api/estudios-prequirurgicos/{id}/`
-  - Retorna detalles del estudio
+- **GET** `/api/estudios/{id}/`
+  - Retorna detalles del estudio prequirúrgico
 
-- **PUT/PATCH** `/api/estudios-prequirurgicos/{id}/`
-  - Actualiza el estudio
+- **PUT** `/api/estudios/{id}/`
+  - Actualiza todos los campos del estudio prequirúrgico
 
-- **DELETE** `/api/estudios-prequirurgicos/{id}/`
-  - Elimina el estudio
+- **PATCH** `/api/estudios/{id}/`
+  - Actualiza parcialmente los datos del estudio prequirúrgico
 
-#### Endpoints Adicionales
-- **POST** `/api/estudios-prequirurgicos/{id}/cambiar-estado/`
-  - Actualiza el estado del estudio
-  - Estados válidos según modelo PrequirurgicoPaciente
+- **DELETE** `/api/estudios/{id}/`
+  - Elimina el estudio prequirúrgico
+
+### Importación
+- **POST** `/api/importar/`
+  - Importa un archivo Excel
+  - Requiere el archivo y tipo de importación
+
+- **GET** `/api/importar/{id}/estado/`
+  - Retorna el estado de la importación
+
+- **POST** `/api/importar/{id}/corregir/`
+  - Corrige datos de la importación
+
+### Turnos
+- **GET** `/api/turnos/`
+  - Lista todos los turnos
+  - Soporta filtros: `paciente`, `medico`, `estado`
+  - Búsqueda por: `paciente__nombre`, `medico__nombre`
+  - Ordenamiento por: `fecha_hora`
+
+- **POST** `/api/turnos/`
+  - Crea un nuevo turno
+  - Requiere todos los campos obligatorios
+
+- **GET** `/api/turnos/{id}/`
+  - Retorna detalles del turno
+
+- **PUT** `/api/turnos/{id}/`
+  - Actualiza todos los campos del turno
+
+- **PATCH** `/api/turnos/{id}/`
+  - Actualiza parcialmente los datos del turno
+
+- **DELETE** `/api/turnos/{id}/`
+  - Elimina el turno
+
+### Informes
+- **GET** `/api/informes/`
+  - Lista todos los informes
+  - Soporta filtros: `paciente`, `medico`, `estado`
+  - Búsqueda por: `paciente__nombre`, `medico__nombre`
+  - Ordenamiento por: `fecha_hora`
+
+- **POST** `/api/informes/`
+  - Crea un nuevo informe
+  - Requiere todos los campos obligatorios
+
+- **GET** `/api/informes/{id}/`
+  - Retorna detalles del informe
+
+- **PUT** `/api/informes/{id}/`
+  - Actualiza todos los campos del informe
+
+- **PATCH** `/api/informes/{id}/`
+  - Actualiza parcialmente los datos del informe
+
+- **DELETE** `/api/informes/{id}/`
+  - Elimina el informe
+
 
 ## Serializers
 
