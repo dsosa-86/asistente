@@ -4,6 +4,10 @@ from apps.consultas.models import Consulta
 from apps.pacientes.models import Paciente
 from apps.usuarios.models import Medico
 
+#testing
+#from django.template.loader import get_template
+
+
 def landing_page(request):
     return render(request, 'frontend/landing_page.html')
 

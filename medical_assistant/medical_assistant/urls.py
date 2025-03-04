@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('importacion_excel/', include('apps.importacion_excel.urls')),
     # Include URLs for other apps
+    path('importacion_excel/', include('apps.importacion_excel.urls')),
     path('pacientes/', include('apps.pacientes.urls')),
     path('usuarios/', include('apps.usuarios.urls')),
     path('turnos/', include('apps.turnos.urls')),
@@ -32,4 +32,5 @@ urlpatterns = [
     path('insumos_medicos/', include('apps.insumos_medicos.urls')),
     path('informes/', include('apps.informes.urls')),
     path('consultas/', include('apps.consultas.urls')),
+    path ('', include('apps.frontend.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
