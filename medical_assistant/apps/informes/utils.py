@@ -1,25 +1,28 @@
 from django.template.loader import render_to_string
 from django.conf import settings
 import os
-from weasyprint import HTML, CSS
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from datetime import datetime
+from django.http import HttpResponse
 
 class GeneradorPDF:
     """
     Clase para generar PDFs de protocolos médicos.
     
-    Esta clase utiliza WeasyPrint para convertir HTML+CSS en PDF.
+    Esta clase utiliza ReportLab para generar PDFs.
     La estructura está diseñada para ser fácilmente personalizable:
     1. Las plantillas HTML están en templates/informes/
     2. Los estilos CSS están en static/css/informes/
     3. Cada tipo de protocolo puede tener su propia plantilla y estilo
     """
 
-    def __init__(self, protocolo):
-        self.protocolo = protocolo
-        self.template_path = f"informes/{protocolo.plantilla_pdf}"
-        self.style_path = f"css/informes/{protocolo.estilo_pdf}"
-        
+    def __init__(self, informe):
+        self.informe = informe
+
     def get_context(self):
         """
         Prepara el contexto para la plantilla HTML.
@@ -39,68 +42,44 @@ class GeneradorPDF:
             # Agrega aquí más variables según necesites
         }
 
-    def get_header_footer(self):
-        """
-        Genera el HTML para encabezado y pie de página.
-        Personaliza este método para modificar el diseño.
-        """
-        header = render_to_string('informes/partials/header.html', self.get_context())
-        footer = render_to_string('informes/partials/footer.html', self.get_context())
-        return header, footer
-
-    def get_css(self):
-        """
-        Carga y combina los archivos CSS.
-        Agrega aquí más archivos CSS según necesites.
-        """
-        css_files = [
-            self.style_path,
-            'css/informes/common.css',  # Estilos comunes a todos los protocolos
-            'css/informes/print.css',   # Estilos específicos para impresión
-        ]
-        
-        css_paths = [os.path.join(settings.STATIC_ROOT, css) for css in css_files]
-        return [CSS(filename=path) for path in css_paths if os.path.exists(path)]
-
     def generar(self):
-        """
-        Genera el PDF final combinando todos los elementos.
-        Retorna: BytesIO con el contenido del PDF.
-        """
-        from io import BytesIO
-        
-        # Renderiza la plantilla principal
-        context = self.get_context()
-        html_content = render_to_string(self.template_path, context)
-        
-        # Agrega encabezado y pie de página
-        header, footer = self.get_header_footer()
-        
-        # Combina todo en un HTML final
-        html_final = f"""
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <meta charset="UTF-8">
-                <!-- Los estilos se cargarán desde get_css() -->
-            </head>
-            <body>
-                {header}
-                {html_content}
-                {footer}
-            </body>
-        </html>
-        """
-        
-        # Genera el PDF
-        pdf_buffer = BytesIO()
-        HTML(string=html_final).write_pdf(
-            pdf_buffer,
-            stylesheets=self.get_css(),
-            presentational_hints=True
-        )
-        
-        return pdf_buffer
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="informe_{self.informe.id}.pdf"'
+
+        doc = SimpleDocTemplate(response, pagesize=letter)
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Título del documento
+        elements.append(Paragraph(f"Informe: {self.informe.titulo}", styles['Title']))
+
+        # Tabla de contenido
+        data = [
+            ['Campo', 'Valor'],
+            ['Paciente', self.informe.paciente.nombre],
+            ['Fecha', self.informe.fecha.strftime('%d/%m/%Y')],
+            # Agregar más campos según sea necesario
+        ]
+        table = Table(data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 14),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 12),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+
+        # Generar el PDF
+        doc.build(elements)
+        return response
 
 # Plantillas predefinidas para diferentes tipos de protocolos
 PLANTILLAS_PREDEFINIDAS = {
@@ -146,4 +125,4 @@ PLANTILLAS_PREDEFINIDAS = {
             }
         }
     }
-} 
+}

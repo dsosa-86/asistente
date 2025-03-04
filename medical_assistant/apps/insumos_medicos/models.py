@@ -62,3 +62,12 @@ class UsoMedicamento(models.Model):
 
     def __str__(self):
         return f"{self.medicamento.nombre} - {self.operacion}"
+
+class InsumoMedico(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    cantidad = models.PositiveIntegerField()
+    fecha_vencimiento = models.DateField()
+
+    def __str__(self):
+        return self.nombre

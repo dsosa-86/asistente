@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 class Notificacion(models.Model):
     TIPOS = [
@@ -25,7 +25,7 @@ class Notificacion(models.Model):
         ('URGENTE', 'Urgente'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tipo = models.CharField(max_length=50, choices=TIPOS)
     mensaje = models.TextField()
     leida = models.BooleanField(default=False)

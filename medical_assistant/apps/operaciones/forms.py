@@ -1,5 +1,5 @@
 from django import forms
-from .models import EstudioPrequirurgico, PrequirurgicoPaciente
+from .models import EstudioPrequirurgico, PrequirurgicoPaciente, Operacion
 
 class EstudioPrequirurgicoForm(forms.ModelForm):
     class Meta:
@@ -77,4 +77,9 @@ class FiltroEstudioForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from .models import TipoCirugia
-        self.fields['tipo_cirugia'].queryset = TipoCirugia.objects.all() 
+        self.fields['tipo_cirugia'].queryset = TipoCirugia.objects.all()
+
+class OperacionForm(forms.ModelForm):
+    class Meta:
+        model = Operacion
+        fields = '__all__'

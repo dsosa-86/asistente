@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseServerError
+from django.conf import settings
 from django.views.decorators.http import require_POST
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -10,12 +11,13 @@ from .utils import GeneradorPDF
 import difflib
 import json
 from django.template.loader import render_to_string
-from weasyprint import HTML
-from django.http import HttpResponse
-import tempfile
-from django.conf import settings
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 import os
-from django.http import HttpResponseForbidden, HttpResponseNotFound, HttpResponseServerError
+from io import BytesIO
 
 # Create your views here.
 
@@ -302,29 +304,58 @@ def exportar_registro_firmas(request, informe_id):
         'generado_por': request.user.medico
     }
     
-    # Renderizar el HTML
-    html_string = render_to_string('informes/registro_firmas_pdf.html', context)
-    
     # Crear respuesta HTTP con el PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="registro_firmas_{informe.id}.pdf"'
     
     # Generar PDF
-    HTML(string=html_string).write_pdf(
-        response,
-        stylesheets=[
-            'static/css/informes/firmas.css',
-            'static/css/informes/pdf.css'
-        ]
-    )
-    
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Título del documento
+    elements.append(Paragraph(f"Registro de Firmas: {informe.titulo}", styles['Title']))
+
+    # Tabla de firmas
+    data = [['Médico', 'Rol', 'Fecha', 'Versión', 'Integridad', 'Dispositivo', 'IP']]
+    for firma in informe.firmas.all():
+        data.append([
+            firma.medico.nombre_completo,
+            firma.get_rol_display(),
+            firma.fecha_firma.strftime('%d/%m/%Y %H:%M'),
+            firma.version.version if firma.version else 'Original',
+            'Válida' if firma.verificar_integridad() else 'Inválida',
+            firma.dispositivo,
+            firma.ip_firma
+        ])
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 12),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(table)
+
+    # Generar el PDF
+    doc.build(elements)
     return response
 
+@login_required
 def generar_pdf_registro_firmas(request, informe_id):
     """
-    Genera un PDF con el registro de firmas de un informe.
+    Genera un PDF con el registro de firmas de un informe usando ReportLab.
     """
     try:
+        # Obtener el informe
         informe = Informe.objects.get(id=informe_id)
         
         # Verificar permisos
@@ -335,22 +366,50 @@ def generar_pdf_registro_firmas(request, informe_id):
         firmas = FirmaInforme.objects.filter(informe=informe).order_by('-fecha_firma')
         versiones = VersionInforme.objects.filter(informe=informe).order_by('-fecha_creacion')
         
-        # Renderizar el template HTML
-        html_string = render_to_string('informes/registro_firmas_pdf.html', {
-            'informe': informe,
-            'firmas': firmas,
-            'versiones': versiones,
-            'fecha_generacion': timezone.now(),
-            'usuario_generador': request.user,
-        })
+        # Crear un buffer para el PDF
+        buffer = BytesIO()
         
-        # Configurar rutas para los archivos estáticos
-        base_url = request.build_absolute_uri('/')
-        pdf_file = HTML(string=html_string, base_url=base_url).write_pdf(
-            stylesheets=[
-                os.path.join(settings.STATIC_ROOT, 'css/informes/pdf.css'),
-            ]
-        )
+        # Crear el objeto PDF
+        pdf = canvas.Canvas(buffer, pagesize=letter)
+        
+        # Configurar el título del PDF
+        pdf.setTitle(f"Registro de Firmas - Informe {informe_id}")
+        
+        # Agregar contenido al PDF
+        pdf.drawString(100, 750, f"Registro de Firmas - Informe {informe_id}")
+        pdf.drawString(100, 730, f"Fecha de generación: {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        pdf.drawString(100, 710, f"Generado por: {request.user.get_full_name()}")
+        
+        # Espacio entre secciones
+        y_position = 690
+        
+        # Agregar información del informe
+        pdf.drawString(100, y_position, f"Informe: {informe.titulo}")
+        y_position -= 20
+        pdf.drawString(100, y_position, f"Descripción: {informe.descripcion}")
+        y_position -= 30
+        
+        # Agregar firmas
+        pdf.drawString(100, y_position, "Firmas:")
+        y_position -= 20
+        for firma in firmas:
+            pdf.drawString(120, y_position, f"{firma.medico.nombre_completo} - {firma.fecha_firma.strftime('%Y-%m-%d %H:%M:%S')}")
+            y_position -= 15
+        
+        # Agregar versiones
+        pdf.drawString(100, y_position, "Versiones:")
+        y_position -= 20
+        for version in versiones:
+            pdf.drawString(120, y_position, f"Versión {version.version} - {version.fecha_creacion.strftime('%Y-%m-%d %H:%M:%S')}")
+            y_position -= 15
+        
+        # Finalizar el PDF
+        pdf.showPage()
+        pdf.save()
+        
+        # Obtener el contenido del buffer
+        pdf_file = buffer.getvalue()
+        buffer.close()
         
         # Generar respuesta HTTP con el PDF
         response = HttpResponse(pdf_file, content_type='application/pdf')
@@ -362,3 +421,9 @@ def generar_pdf_registro_firmas(request, informe_id):
         return HttpResponseNotFound('Informe no encontrado')
     except Exception as e:
         return HttpResponseServerError(f'Error al generar el PDF: {str(e)}')
+
+def generar_informe_pdf(request, pk):
+    informe = get_object_or_404(Informe, pk=pk)
+    generador = GeneradorPDF(informe)
+    return generador.generar()
+

@@ -821,6 +821,37 @@ def exportar_pdf(datos, nombre_archivo):
     doc.build(elements)
     return response
 
+@login_required
+@require_POST
+def guardar_correcciones(request):
+    """Guarda las correcciones manuales realizadas por el usuario"""
+    try:
+        importacion_id = request.POST.get('importacion_id')
+        correcciones = json.loads(request.POST.get('correcciones', '[]'))
+        
+        importacion = get_object_or_404(ExcelImport, pk=importacion_id)
+        
+        if importacion.estado != 'EN_REVISION':
+            return JsonResponse({'error': 'La importación no está en estado de revisión'}, status=400)
+        
+        with transaction.atomic():
+            for correccion in correcciones:
+                CorreccionDatos.objects.create(
+                    importacion=importacion,
+                    campo=correccion['campo'],
+                    valor_original=correccion['valor_original'],
+                    valor_corregido=correccion['valor_corregido'],
+                    usuario=request.user
+                )
+        
+        importacion.estado = 'CORREGIDO'
+        importacion.save()
+        
+        return JsonResponse({'status': 'success'})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
 ## Fin del Modulo
 
 

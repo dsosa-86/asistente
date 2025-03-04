@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from .models import EstudioPrequirurgico, PrequirurgicoPaciente, TipoCirugia
 from .forms import EstudioPrequirurgicoForm, PrequirurgicoPacienteForm
 from .models import Operacion
+from .forms import OperacionForm
 
 @login_required
 def lista_estudios_prequirurgicos(request):
@@ -136,3 +137,38 @@ def detalle_operacion(request, pk):
         'estudios': PrequirurgicoPaciente.objects.filter(operacion=operacion)
     }
     return render(request, 'operaciones/detalle_operacion.html', context)
+
+def lista_operaciones(request):
+    operaciones = Operacion.objects.all()
+    return render(request, 'operaciones/lista_operaciones.html', {'operaciones': operaciones})
+
+def crear_operacion(request):
+    if request.method == 'POST':
+        form = OperacionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Operación creada correctamente.")
+            return redirect('operaciones:lista_operaciones')
+    else:
+        form = OperacionForm()
+    return render(request, 'operaciones/form_operacion.html', {'form': form})
+
+def editar_operacion(request, pk):
+    operacion = get_object_or_404(Operacion, pk=pk)
+    if request.method == 'POST':
+        form = OperacionForm(request.POST, instance=operacion)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Operación actualizada correctamente.")
+            return redirect('operaciones:lista_operaciones')
+    else:
+        form = OperacionForm(instance=operacion)
+    return render(request, 'operaciones/form_operacion.html', {'form': form})
+
+def eliminar_operacion(request, pk):
+    operacion = get_object_or_404(Operacion, pk=pk)
+    if request.method == 'POST':
+        operacion.delete()
+        messages.success(request, "Operación eliminada correctamente.")
+        return redirect('operaciones:lista_operaciones')
+    return render(request, 'operaciones/eliminar_operacion.html', {'operacion': operacion})

@@ -12,4 +12,5 @@ urlpatterns = [
     path('verificar-firma/<int:firma_id>/', views.verificar_firma, name='verificar_firma'),
     path('verificar-integridad/<int:informe_id>/', views.verificar_integridad_firmas, name='verificar_integridad'),
     path('registro-firmas/<int:informe_id>/pdf/', views.generar_pdf_registro_firmas, name='generar_pdf_registro_firmas'),
-] 
+    path('<int:pk>/pdf/', views.generar_informe_pdf, name='generar_informe_pdf'),
+]
