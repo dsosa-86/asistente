@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from ..models import Notificacion, ConfiguracionNotificacion
+from apps.notificaciones.models import Notificacion, ConfiguracionNotificacion
 
 class NotificacionViewsTests(TestCase):
     def setUp(self):

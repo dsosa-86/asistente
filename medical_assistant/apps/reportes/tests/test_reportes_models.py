@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from ..models import Reporte, Estadistica
+from apps.reportes.models import Reporte, Estadistica
 
 class ReporteModelTests(TestCase):
     def setUp(self):

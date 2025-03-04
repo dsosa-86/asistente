@@ -1,3 +1,8 @@
 {
     "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
+{
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "C:\\Users\\Tecno\\Documents\\Proyectos\\asistente_medico\\asistente\\medical_assistant"
+    }
+}

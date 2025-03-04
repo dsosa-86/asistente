@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from ..models import Notificacion, ConfiguracionNotificacion
-from ..services import ServicioNotificaciones
+from apps.notificaciones.models import Notificacion, ConfiguracionNotificacion
+from apps.notificaciones.services import ServicioNotificaciones
 
 class ServicioNotificacionesTests(TestCase):
     def setUp(self):

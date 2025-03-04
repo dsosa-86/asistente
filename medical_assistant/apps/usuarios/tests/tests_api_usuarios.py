@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from ..models import Medico
+from apps.usuarios.models import Medico
 
 class MedicoAPITests(APITestCase):
     def setUp(self):

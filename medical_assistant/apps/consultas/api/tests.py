@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from apps.pacientes.models import Paciente
 from apps.usuarios.models import Medico
-from ..models import Consulta
+from apps.consultas.models import Consulta
 
 class ConsultaAPITests(APITestCase):
     def setUp(self):

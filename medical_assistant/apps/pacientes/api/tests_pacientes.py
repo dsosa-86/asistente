@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from ..models import Paciente
+from apps.pacientes.models import Paciente
 
 class PacienteAPITests(APITestCase):
     def setUp(self):

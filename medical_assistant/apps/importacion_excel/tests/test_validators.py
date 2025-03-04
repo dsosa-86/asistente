@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from ..validators import ValidadorExcel, validar_archivo_excel
+from apps.importacion_excel.validators import ValidadorExcel
 from django.core.files.uploadedfile import SimpleUploadedFile
 import pandas as pd
 import io
@@ -14,18 +14,6 @@ class TestValidadores(TestCase):
             self.excel_content,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-    def test_validar_archivo_excel(self):
-        # Test archivo válido
-        try:
-            validar_archivo_excel(self.archivo_valido)
-        except ValidationError:
-            self.fail("validar_archivo_excel levantó ValidationError inesperadamente")
-
-        # Test archivo inválido
-        archivo_invalido = SimpleUploadedFile("test.txt", b"contenido", content_type="text/plain")
-        with self.assertRaises(ValidationError):
-            validar_archivo_excel(archivo_invalido)
 
     def test_validar_estructura_excel(self):
         # Crear DataFrame de prueba

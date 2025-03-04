@@ -42,20 +42,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Aplicaciones propias
-    'apps.pacientes',
-    'apps.turnos',
-    'apps.consultas',
-    'apps.operaciones',
-    'apps.informes',
-    'apps.importacion_excel',
-    'apps.usuarios',
+    'apps.api',
     'apps.centros_medicos',
-    'apps.obras_sociales',
+    'apps.consultas',
     'apps.core',
-    'apps.notificaciones',
-    'apps.insumos_medicos',
-    'apps.reportes',
     'apps.frontend',
+    'apps.historias_clinicas',
+    'apps.importacion_excel',
+    'apps.informes',
+    'apps.insumos_medicos',
+    'apps.notificaciones',
+    'apps.obras_sociales',
+    'apps.operaciones',
+    'apps.pacientes',
+    'apps.reportes',
+    'apps.turnos',
+    'apps.usuarios',
     # Rest Framework
     'rest_framework',
     'django_filters',
@@ -110,7 +112,11 @@ DATABASES = {
         'PASSWORD': 'asistente_medico_pasword', # Contraseña de PostgreSQL
         'HOST': 'localhost',                   # Host de la base de datos
         'PORT': '5432',                        # Puerto de PostgreSQL (por defecto es 5432)
-    }
+    },
+    'test': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'memory',
+    },
 }
 
 # Password validation

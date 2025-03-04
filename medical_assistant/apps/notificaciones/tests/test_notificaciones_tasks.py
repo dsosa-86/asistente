@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from ..models import Notificacion
-from ..tasks import enviar_notificacion_email, enviar_notificacion_whatsapp
+from apps.notificaciones.models import Notificacion
+from apps.notificaciones.tasks import enviar_notificacion_email, enviar_notificacion_whatsapp
 
 class NotificacionTasksTests(TestCase):
     def setUp(self):

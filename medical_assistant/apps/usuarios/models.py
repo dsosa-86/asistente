@@ -2,8 +2,11 @@ from django.db import models
 
 # Create your models here.
 from django.contrib.auth.models import AbstractUser
-from django.db import models
+
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+
+
 
 class Usuario(AbstractUser):
     ROLES = [
@@ -77,9 +80,9 @@ class GestionAdministrativa(models.Model):
         verbose_name_plural = "Gestiones Administrativas"
         constraints = [
             models.CheckConstraint(
-                check=(
-                    models.Q(tipo_gestion='MEDICO', centro_medico__isnull=True, medico__isnull=False) |
-                    models.Q(tipo_gestion='CENTRO', medico__isnull=True, centro_medico__isnull=False)
+                condition=Q(
+                    (Q(tipo_gestion='MEDICO') & Q(centro_medico__isnull=True) & Q(medico__isnull=False)) |
+                    (Q(tipo_gestion='CENTRO') & Q(medico__isnull=True) & Q(centro_medico__isnull=False))
                 ),
                 name='gestion_tipo_valido'
             )

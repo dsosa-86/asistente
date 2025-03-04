@@ -1,8 +1,8 @@
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
-from ..models import ExcelImport
-from ..tasks import procesar_archivo_excel, enviar_notificacion_exito, enviar_notificacion_error
+from apps.importacion_excel.models import ExcelImport
+from apps.importacion_excel.tasks import procesar_archivo_excel, enviar_notificacion_exito, enviar_notificacion_error
 from unittest.mock import patch
 from celery.result import AsyncResult
 
