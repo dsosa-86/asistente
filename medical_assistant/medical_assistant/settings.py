@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.notificaciones',
     'apps.insumos_medicos',
     'apps.reportes',
+    'apps.frontend',
     # Rest Framework
     'rest_framework',
     'django_filters',
